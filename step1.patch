@@ -1,0 +1,484 @@
+From 77cd4432f8751c17fd550eccf0e85271ee43183d Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Wed, 22 Apr 2026 21:37:35 +0000
+Subject: [PATCH] Step 1: foundation fixes
+
+---
+ src/main/java/Egg.java         | 35 +++++++++++++----
+ src/main/java/GameDisplay.java | 64 ++++++++++++++++++++++---------
+ src/main/java/GameEngine.java  | 27 +++++++++----
+ src/main/java/GrassPatch.java  | 18 +++++++++
+ src/main/java/IcePatch.java    | 18 +++++++++
+ src/main/java/Level.java       | 25 +++++++++---
+ src/main/java/Obstacle.java    | 70 +++++++++++++---------------------
+ src/main/java/SwingDoor.java   | 22 +++++++++++
+ src/main/java/Wall.java        | 18 +++++++++
+ 9 files changed, 216 insertions(+), 81 deletions(-)
+ create mode 100644 src/main/java/GrassPatch.java
+ create mode 100644 src/main/java/IcePatch.java
+ create mode 100644 src/main/java/SwingDoor.java
+ create mode 100644 src/main/java/Wall.java
+
+diff --git a/src/main/java/Egg.java b/src/main/java/Egg.java
+index 8bb786d..85607bc 100644
+--- a/src/main/java/Egg.java
++++ b/src/main/java/Egg.java
+@@ -5,25 +5,34 @@ public class Egg {
+     private double velY;
+     private int health;
+     private int strokes;
+-    private static final int RADIUS = 15;
++    public static final int RADIUS = 15;
++
++    public Egg(double startX, double startY) {
++        this.x = startX;
++        this.y = startY;
++        this.velX = 0;
++        this.velY = 0;
++        this.health = 100;
++        this.strokes = 0;
++    }
+
+-    public void move(){
++    public void move() {
+
+     }
+
+-    public void applyImpulsive(double vx, double vy){
++    public void applyImpulse(double vx, double vy) {
+
+     }
+
+-    public void reduceHealth(int amount){
++    public void reduceHealth(int amount) {
+
+     }
+
+-    public boolean isCracked(){
+-        return false;
++    public boolean isCracked() {
++        return health <= 0;
+     }
+
+-    public double getX(){
++    public double getX() {
+         return x;
+     }
+
+@@ -31,7 +40,19 @@ public class Egg {
+         return y;
+     }
+
++    public double getVelX() {
++        return velX;
++    }
++
++    public double getVelY() {
++        return velY;
++    }
++
+     public int getHealth() {
+         return health;
+     }
++
++    public int getStrokes() {
++        return strokes;
++    }
+ }
+diff --git a/src/main/java/GameDisplay.java b/src/main/java/GameDisplay.java
+index cd5692c..a7c46aa 100644
+--- a/src/main/java/GameDisplay.java
++++ b/src/main/java/GameDisplay.java
+@@ -4,6 +4,7 @@ import java.awt.event.*;
+
+ public class GameDisplay extends JFrame {
+     private GameEngine engine;
++    private GamePanel panel;
+     private ShotMeter meter;
+     private Point dragStart;
+     private Point currentMousePos;
+@@ -12,40 +13,69 @@ public class GameDisplay extends JFrame {
+     public static final int WINDOW_WIDTH = 1000;
+     public static final int WINDOW_HEIGHT = 1000;
+
+-    public GameDisplay(GameEngine engine){
++    public GameDisplay(GameEngine engine) {
+         this.engine = engine;
+-        this.setTitle("GameDisplay");
+-        this.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
++        this.setTitle("Tiny Egg");
+         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
++        this.setResizable(false);
++
++        panel = new GamePanel();
++        panel.setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
++        this.add(panel);
++
++        this.pack();
++        this.setLocationRelativeTo(null);
+         this.setVisible(true);
+     }
+
+-    public void paintComponent(Graphics g){
+-        g.setColor(Color.GREEN);
+-        g.fillRect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
++    public GamePanel getPanel() {
++        return panel;
+     }
+
+-    private void drawEgg(Graphics g){
++    public class GamePanel extends JPanel {
+
+-    }
+-    private void drawMap(Graphics g){
++        public GamePanel() {
++            setDoubleBuffered(true);
++            setBackground(new Color(70, 160, 70));
++        }
+
+-    }
+-    private void drawUI(Graphics g){
++        @Override
++        protected void paintComponent(Graphics g) {
++            super.paintComponent(g);
++            Graphics2D g2 = (Graphics2D) g;
++            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
++            drawMap(g2);
++            drawEgg(g2);
++            drawShotPreview(g2);
++            drawUI(g2);
++        }
+
+-    }
+-    private void drawShotPreview(Graphics g){
++        private void drawEgg(Graphics g) {
+
+-    }
+-    public void mousePressed(MouseEvent e){
++        }
++
++        private void drawMap(Graphics g) {
+
++        }
++
++        private void drawUI(Graphics g) {
++
++        }
++
++        private void drawShotPreview(Graphics g) {
++
++        }
+     }
+-    public void mouseDragged(MouseEvent e){
++
++    public void mousePressed(MouseEvent e) {
+
+     }
+-    public void mouseReleased(MouseEvent e){
++
++    public void mouseDragged(MouseEvent e) {
+
+     }
+
++    public void mouseReleased(MouseEvent e) {
+
++    }
+ }
+diff --git a/src/main/java/GameEngine.java b/src/main/java/GameEngine.java
+index b8d8f7e..cc8f522 100644
+--- a/src/main/java/GameEngine.java
++++ b/src/main/java/GameEngine.java
+@@ -3,34 +3,47 @@ public class GameEngine {
+     private Egg activeEgg;
+     private Level currentLevel;
+     private int gameState;
+-    private double FRICTION;
++    private double friction;
+     private int score;
+
+-    public GameEngine(){
++    public GameEngine() {
++        currentLevel = new Level(1);
++        activeEgg = new Egg(currentLevel.getStartPoint().x, currentLevel.getStartPoint().y);
+         window = new GameDisplay(this);
+     }
+
+-    public void update(){
++    public Egg getEgg() {
++        return activeEgg;
++    }
+
++    public Level getLevel() {
++        return currentLevel;
+     }
+
+-    public void processShot(double deltaX, double deltaY, double multiplier){
++    public void update() {
+
+     }
+
+-    public void checkCollision(){
++    public void processShot(double deltaX, double deltaY, double multiplier) {
+
+     }
+-    public void checkNestEntry(){
++
++    public void checkCollision() {
+
+     }
+
+-    public String getFinalResult(){
++    public void checkNestEntry() {
++
++    }
++
++    public String getFinalResult() {
+         return null;
+     }
++
+     public void run() {
+
+     }
++
+     public static void main(String[] args) {
+         GameEngine g = new GameEngine();
+         g.run();
+diff --git a/src/main/java/GrassPatch.java b/src/main/java/GrassPatch.java
+new file mode 100644
+index 0000000..1bb60ef
+--- /dev/null
++++ b/src/main/java/GrassPatch.java
+@@ -0,0 +1,18 @@
++import java.awt.*;
++
++public class GrassPatch extends Obstacle {
++
++    public GrassPatch(int x, int y, int width, int height) {
++        super(x, y, width, height);
++    }
++
++    @Override
++    public void onCollision(Egg egg) {
++
++    }
++
++    @Override
++    public void draw(Graphics g) {
++
++    }
++}
+diff --git a/src/main/java/IcePatch.java b/src/main/java/IcePatch.java
+new file mode 100644
+index 0000000..aab6826
+--- /dev/null
++++ b/src/main/java/IcePatch.java
+@@ -0,0 +1,18 @@
++import java.awt.*;
++
++public class IcePatch extends Obstacle {
++
++    public IcePatch(int x, int y, int width, int height) {
++        super(x, y, width, height);
++    }
++
++    @Override
++    public void onCollision(Egg egg) {
++
++    }
++
++    @Override
++    public void draw(Graphics g) {
++
++    }
++}
+diff --git a/src/main/java/Level.java b/src/main/java/Level.java
+index 31d10c7..93f95d1 100644
+--- a/src/main/java/Level.java
++++ b/src/main/java/Level.java
+@@ -5,23 +5,36 @@ public class Level {
+     private ArrayList<Obstacle> obstacles;
+     private int nestX;
+     private int nestY;
++    private int nestWidth;
++    private int nestHeight;
+     private int startX;
+     private int startY;
+     private int levelID;
+
+-    public int Level(int id){
+-        return 0;
++    public Level(int id) {
++        this.levelID = id;
++        this.obstacles = new ArrayList<>();
++        this.startX = 500;
++        this.startY = 500;
++        this.nestX = 500;
++        this.nestY = 500;
++        this.nestWidth = 80;
++        this.nestHeight = 50;
+     }
+
+     public ArrayList<Obstacle> getObstacles() {
+         return obstacles;
+     }
+
+-    public Rectangle getNestBounds(){
+-        return null;
++    public Rectangle getNestBounds() {
++        return new Rectangle(nestX - nestWidth / 2, nestY - nestHeight / 2, nestWidth, nestHeight);
+     }
+
+-    public Point getStartPoint(){
+-        return null;
++    public Point getStartPoint() {
++        return new Point(startX, startY);
++    }
++
++    public int getLevelID() {
++        return levelID;
+     }
+ }
+diff --git a/src/main/java/Obstacle.java b/src/main/java/Obstacle.java
+index ccb5a41..bb5c812 100644
+--- a/src/main/java/Obstacle.java
++++ b/src/main/java/Obstacle.java
+@@ -1,59 +1,41 @@
+ import java.awt.*;
+
+-abstract class Obstacle {
+-    private int x;
+-    private int y;
+-    private int width;
+-    private int height;
+-
+-    public Rectangle getBounds(){
+-        return null;
++public abstract class Obstacle {
++    protected int x;
++    protected int y;
++    protected int width;
++    protected int height;
++
++    public Obstacle(int x, int y, int width, int height) {
++        this.x = x;
++        this.y = y;
++        this.width = width;
++        this.height = height;
+     }
+
+-    public void onCollision(Egg egg){
+-
++    public Rectangle getBounds() {
++        return new Rectangle(x, y, width, height);
+     }
+
+-    public void draw(Graphics g){
+-
++    public int getX() {
++        return x;
+     }
+
+-    public class SwingDoor extends Obstacle{
+-
+-        @Override
+-        public void onCollision(Egg egg) {
+-            super.onCollision(egg);
+-        }
+-        @Override
+-        public void draw(Graphics g) {
+-            super.draw(g);
+-        }
++    public int getY() {
++        return y;
++    }
+
+-        public void update(){
++    public int getWidth() {
++        return width;
++    }
+
+-        }
++    public int getHeight() {
++        return height;
+     }
+
+-    public class GrassPatch extends Obstacle{
+-        @Override
+-        public void onCollision(Egg egg) {
+-            super.onCollision(egg);
+-        }
+-        @Override
+-        public void draw(Graphics g) {
+-            super.draw(g);
+-        }
++    public void onCollision(Egg egg) {
+
+     }
+-    public class Wall extends Obstacle{
+-        @Override
+-        public void onCollision(Egg egg) {
+-            super.onCollision(egg);
+-        }
+-
+-        @Override
+-        public void draw(Graphics g) {
+-            super.draw(g);
+-        }
+-    }
++
++    public abstract void draw(Graphics g);
+ }
+diff --git a/src/main/java/SwingDoor.java b/src/main/java/SwingDoor.java
+new file mode 100644
+index 0000000..3d828d9
+--- /dev/null
++++ b/src/main/java/SwingDoor.java
+@@ -0,0 +1,22 @@
++import java.awt.*;
++
++public class SwingDoor extends Obstacle {
++
++    public SwingDoor(int x, int y, int width, int height) {
++        super(x, y, width, height);
++    }
++
++    public void update() {
++
++    }
++
++    @Override
++    public void onCollision(Egg egg) {
++
++    }
++
++    @Override
++    public void draw(Graphics g) {
++
++    }
++}
+diff --git a/src/main/java/Wall.java b/src/main/java/Wall.java
+new file mode 100644
+index 0000000..2f2d5c4
+--- /dev/null
++++ b/src/main/java/Wall.java
+@@ -0,0 +1,18 @@
++import java.awt.*;
++
++public class Wall extends Obstacle {
++
++    public Wall(int x, int y, int width, int height) {
++        super(x, y, width, height);
++    }
++
++    @Override
++    public void onCollision(Egg egg) {
++
++    }
++
++    @Override
++    public void draw(Graphics g) {
++
++    }
++}
+--
+2.43.0

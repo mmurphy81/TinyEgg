@@ -3,34 +3,47 @@ public class GameEngine {
     private Egg activeEgg;
     private Level currentLevel;
     private int gameState;
-    private double FRICTION;
+    private double friction;
     private int score;
 
-    public GameEngine(){
+    public GameEngine() {
+        currentLevel = new Level(1);
+        activeEgg = new Egg(currentLevel.getStartPoint().x, currentLevel.getStartPoint().y);
         window = new GameDisplay(this);
     }
 
-    public void update(){
+    public Egg getEgg() {
+        return activeEgg;
+    }
+
+    public Level getLevel() {
+        return currentLevel;
+    }
+
+    public void update() {
 
     }
 
-    public void processShot(double deltaX, double deltaY, double multiplier){
+    public void processShot(double deltaX, double deltaY, double multiplier) {
 
     }
 
-    public void checkCollision(){
-
-    }
-    public void checkNestEntry(){
+    public void checkCollision() {
 
     }
 
-    public String getFinalResult(){
+    public void checkNestEntry() {
+
+    }
+
+    public String getFinalResult() {
         return null;
     }
+
     public void run() {
 
     }
+
     public static void main(String[] args) {
         GameEngine g = new GameEngine();
         g.run();

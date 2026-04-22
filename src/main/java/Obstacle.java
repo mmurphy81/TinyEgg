@@ -1,59 +1,41 @@
 import java.awt.*;
 
-abstract class Obstacle {
-    private int x;
-    private int y;
-    private int width;
-    private int height;
+public abstract class Obstacle {
+    protected int x;
+    protected int y;
+    protected int width;
+    protected int height;
 
-    public Rectangle getBounds(){
-        return null;
+    public Obstacle(int x, int y, int width, int height) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
     }
 
-    public void onCollision(Egg egg){
+    public Rectangle getBounds() {
+        return new Rectangle(x, y, width, height);
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public void onCollision(Egg egg) {
 
     }
 
-    public void draw(Graphics g){
-
-    }
-
-    public class SwingDoor extends Obstacle{
-
-        @Override
-        public void onCollision(Egg egg) {
-            super.onCollision(egg);
-        }
-        @Override
-        public void draw(Graphics g) {
-            super.draw(g);
-        }
-
-        public void update(){
-
-        }
-    }
-
-    public class GrassPatch extends Obstacle{
-        @Override
-        public void onCollision(Egg egg) {
-            super.onCollision(egg);
-        }
-        @Override
-        public void draw(Graphics g) {
-            super.draw(g);
-        }
-
-    }
-    public class Wall extends Obstacle{
-        @Override
-        public void onCollision(Egg egg) {
-            super.onCollision(egg);
-        }
-
-        @Override
-        public void draw(Graphics g) {
-            super.draw(g);
-        }
-    }
+    public abstract void draw(Graphics g);
 }
