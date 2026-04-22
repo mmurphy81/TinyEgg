@@ -38,15 +38,11 @@ public class GameDisplay extends JFrame {
         // Drawing the ice
         g.setColor(new Color(0, 191, 255));
         g.fillRect(113, 105, 245, 197);
-
-        g.setColor(new Color(0, 191, 255));
         g.fillRect(396, 487, 283, 237);
 
         // Drawing the walls
         g.setColor(new Color(220, 80, 80));
         g.fillRect(519, 79, 38, 316);
-
-        g.setColor(new Color(220, 80, 80));
         g.fillRect(245, 632, 38, 290);
 
         // Bird's nest (top right)
