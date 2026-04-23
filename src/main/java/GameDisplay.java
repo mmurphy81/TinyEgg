@@ -80,6 +80,49 @@ public class GameDisplay extends JFrame {
         g.drawPolyline(x3, y3, x3.length);
     }
 
+    private void drawMap2(Graphics g){
+        // Background
+        g.setColor(new Color(34, 139, 34));
+        g.fillRect(0, 0, getWidth(), getHeight());
+
+        // === PILLARS ===
+        g.setColor(new Color(220, 80, 80));
+        g.fillRect(200, 0, 25, 300);
+        g.fillRect(250, 500, 25, 300);
+        g.fillRect(550, 0, 25, 200);
+        g.fillRect(700, 0, 25, 200);
+        g.fillRect(510, 470, 25, 200);
+        g.fillRect(900, 0, 25, 200);
+
+        // === ICE === (IMPORTANT: use fillRect, not drawRect)
+        g.setColor(new Color(0, 191, 255));
+        g.fillRect(0, 200, 200, 120);
+        g.fillRect(275, 600, 200, 120);
+        g.fillRect(550, 260, 150, 110);
+
+        // === GRASS ===
+        g.setColor(new Color(0, 100, 0));
+        int[] x1 = {390, 415, 440, 465, 490, 515};
+        int[] y1 = {430, 400, 430, 400, 430, 400};
+        g.drawPolyline(x1, y1, x1.length);
+
+        int[] x2 = {720, 748, 776, 804, 832, 860, 888};
+        int[] y2 = {530, 500, 530, 500, 530, 500, 530};
+        g.drawPolyline(x2, y2, x2.length);
+
+        int[] x3 = {560, 588, 616, 644, 672, 700};
+        int[] y3 = {720, 690, 720, 690, 720, 690};
+        g.drawPolyline(x3, y3, x3.length);
+
+        // Egg
+        g.setColor(new Color(148, 0, 211));
+        g.fillOval(50, 800, 90, 120);
+
+        // Nest
+        g.setColor(new Color(205, 133, 63));
+        g.fillOval(830, 830, 110, 65);
+    }
+
     private void drawUI(Graphics g){
 
     }
@@ -96,7 +139,7 @@ public class GameDisplay extends JFrame {
 
     }
     public void paint(Graphics g){
-        this.drawMap1(g);
+        this.drawMap2(g);
     }
 
 
