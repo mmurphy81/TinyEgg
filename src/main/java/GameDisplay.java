@@ -12,6 +12,14 @@ public class GameDisplay extends JFrame {
     public static final int WINDOW_WIDTH = 1000;
     public static final int WINDOW_HEIGHT = 1000;
 
+    private static final Color GRASS = new Color(34, 139, 34);
+    private static final Color ICE = new Color(0, 191, 255);
+    private static final Color CORAL = new Color(220, 80, 80);
+    private static final Color LIGHT_ORANGE = new Color(205, 133, 63);
+    private static final Color BROWN = new Color(122, 75, 29);
+    private static final Color DARK_GREEN = new Color(0, 100, 0);
+
+
     public GameDisplay(GameEngine engine){
         this.engine = engine;
         this.setTitle("GameDisplay");
@@ -32,27 +40,28 @@ public class GameDisplay extends JFrame {
 
     private void drawMap1(Graphics g){
         // Background
-        g.setColor(new Color(34, 139, 34));
+        g.setColor(GRASS);
         g.fillRect(0, 0, getWidth(), getHeight());
 
         // Drawing the ice
-        g.setColor(new Color(0, 191, 255));
+        g.setColor(ICE);
         g.fillRect(113, 105, 245, 197);
         g.fillRect(396, 487, 283, 237);
 
         // Drawing the walls
-        g.setColor(new Color(220, 80, 80));
+        g.setColor(CORAL);
         g.fillRect(519, 79, 38, 316);
         g.fillRect(245, 632, 38, 290);
 
         // Bird's nest (top right)
-        g.setColor(new Color(205, 133, 63));
+        g.setColor(LIGHT_ORANGE);
         g.fillOval(736, 66, 200, 100);
-        g.setColor(new Color(122, 75, 29));
+
+        g.setColor(BROWN);
         g.fillOval(750, 80, 160, 50);
 
         // Drawing the grass
-        g.setColor(new Color(0, 100, 0));
+        g.setColor(DARK_GREEN);
 
         // Top-left grass patch
         //Initiates the coordinates for each point of the grass
