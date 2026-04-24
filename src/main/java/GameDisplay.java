@@ -85,7 +85,7 @@ public class GameDisplay extends JFrame {
         g.setColor(new Color(34, 139, 34));
         g.fillRect(0, 0, getWidth(), getHeight());
 
-        // === PILLARS ===
+        // Walls
         g.setColor(new Color(220, 80, 80));
         g.fillRect(200, 0, 25, 320);
         g.fillRect(250, 500, 25, 300);
@@ -94,7 +94,7 @@ public class GameDisplay extends JFrame {
         g.fillRect(475, 470, 25, 300);
         g.fillRect(900, 0, 25, 600);
 
-        // === ICE === (IMPORTANT: use fillRect, not drawRect)
+        // Ice
         g.setColor(new Color(0, 191, 255));
         g.fillRect(0, 200, 200, 120);
         g.fillRect(275, 600, 200, 120);
