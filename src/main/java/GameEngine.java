@@ -1,4 +1,10 @@
-public class GameEngine {
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.Timer;
+
+// Implement actionlistener to create animatinos
+public class GameEngine implements ActionListener{
+    // Instance variables
     private GameDisplay window;
     private Egg activeEgg;
     private Level currentLevel;
@@ -6,16 +12,39 @@ public class GameEngine {
     private double FRICTION;
     private int score;
 
+    // Constants for state
+    public static final int STATE_OPENING = 0;
+    public static final int STATE_PLAYING = 1;
+
+    // Constructor that gives access to everything
     public GameEngine(){
+        gameState = STATE_OPENING;
+        activeEgg = new Egg(600,345);
         window = new GameDisplay(this);
     }
 
-    public void update(){
+    // Updates the gamestate depending on egg
+    public void update() {
+        if (gameState == STATE_OPENING) {
+            activeEgg.updateOpening();
 
+            if (activeEgg.getState()== Egg.STATE_LANDED) {
+                gameState = STATE_PLAYING;
+            }
+        }
+        window.repaint();
+    }
+
+    public Egg getEgg() {
+        return activeEgg;
     }
 
     public void processShot(double deltaX, double deltaY, double multiplier){
 
+    }
+
+    public int getGameState() {
+        return gameState;
     }
 
     public void checkCollision(){
@@ -28,9 +57,19 @@ public class GameEngine {
     public String getFinalResult(){
         return null;
     }
+
+    // Timer for animation
     public void run() {
+        Timer timer = new Timer(16, this);
+        timer.start();
 
     }
+
+    public void actionPerformed(ActionEvent e){
+
+        update();
+    }
+
     public static void main(String[] args) {
         GameEngine g = new GameEngine();
         g.run();
