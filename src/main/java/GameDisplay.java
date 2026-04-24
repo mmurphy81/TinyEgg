@@ -80,6 +80,50 @@ public class GameDisplay extends JFrame {
         g.drawPolyline(x3, y3, x3.length);
     }
 
+    private void drawMap2(Graphics g){
+        // Background
+        g.setColor(GRASS);
+        g.fillRect(0, 0, getWidth(), getHeight());
+
+        // Right side walls
+        g.setColor(CORAL);
+        g.fillRect(200, 0, 25, 320);
+        g.fillRect(250, 500, 25, 300);
+        g.fillRect(475, 0, 25, 300);
+
+        //Left side walls
+        g.fillRect(700, 0, 25, 400);
+        g.fillRect(475, 470, 25, 300);
+        g.fillRect(900, 0, 25, 600);
+
+        // Ice
+        g.setColor(ICE);
+        g.fillRect(0, 200, 200, 120);
+        g.fillRect(275, 600, 200, 120);
+        g.fillRect(500, 260, 200, 120);
+
+        // Nest
+        g.setColor(LIGHT_ORANGE);
+        g.fillOval(750, 650, 200, 100);
+        g.setColor(BROWN);
+        g.fillOval(760, 660, 160, 50);
+
+        // Grass
+        g.setColor(DARK_GREEN);
+        int[] x1 = {390, 415, 440, 465, 490, 515};
+        int[] y1 = {430, 400, 430, 400, 430, 400};
+        g.drawPolyline(x1, y1, x1.length);
+
+        int[] x2 = {720, 748, 776, 804, 832, 860, 888};
+        int[] y2 = {530, 500, 530, 500, 530, 500, 530};
+        g.drawPolyline(x2, y2, x2.length);
+
+        int[] x3 = {560, 588, 616, 644, 672, 700};
+        int[] y3 = {720, 690, 720, 690, 720, 690};
+        g.drawPolyline(x3, y3, x3.length);
+
+    }
+
     private void drawUI(Graphics g){
 
     }
@@ -96,7 +140,7 @@ public class GameDisplay extends JFrame {
 
     }
     public void paint(Graphics g){
-        this.drawMap1(g);
+        this.drawMap2(g);
     }
 
 
