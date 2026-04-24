@@ -7,7 +7,7 @@ public class GameEngine {
     private int score;
 
     public GameEngine() {
-        currentLevel = new Level(1);
+        currentLevel = new Level(3);
         activeEgg = new Egg(currentLevel.getStartPoint().x, currentLevel.getStartPoint().y);
         window = new GameDisplay(this);
     }
