@@ -58,14 +58,15 @@ public class GameDisplay extends JFrame {
         }
         bf.show();
         Toolkit.getDefaultToolkit().sync();
-
-
+        this.drawMap2(g);
     }
 
     private void myPaint(Graphics g) {
         // If we are in opening stages of the game, draw the begining animation
         if (engine.getGameState() == GameEngine.STATE_OPENING) {
             drawOpening(g);
+            //this.drawMap2(g);
+
         }
 
         // If the egg has landed, then we draw the crack on the egg
@@ -161,7 +162,7 @@ public class GameDisplay extends JFrame {
         g.drawOval(560, 350, 120, 50);
     }
 
-    private void drawMap(Graphics g){
+    private void drawMap(Graphics g){}
 
 
     private void drawMap1(Graphics g){
@@ -265,9 +266,7 @@ public class GameDisplay extends JFrame {
     public void mouseReleased(MouseEvent e){
 
     }
-    public void paint(Graphics g){
-        this.drawMap2(g);
-    }
+
 
 
 }
