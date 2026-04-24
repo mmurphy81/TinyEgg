@@ -82,32 +82,34 @@ public class GameDisplay extends JFrame {
 
     private void drawMap2(Graphics g){
         // Background
-        g.setColor(new Color(34, 139, 34));
+        g.setColor(GRASS);
         g.fillRect(0, 0, getWidth(), getHeight());
 
-        // Walls
-        g.setColor(new Color(220, 80, 80));
+        // Right side walls
+        g.setColor(CORAL);
         g.fillRect(200, 0, 25, 320);
         g.fillRect(250, 500, 25, 300);
         g.fillRect(475, 0, 25, 300);
+
+        //Left side walls
         g.fillRect(700, 0, 25, 400);
         g.fillRect(475, 470, 25, 300);
         g.fillRect(900, 0, 25, 600);
 
         // Ice
-        g.setColor(new Color(0, 191, 255));
+        g.setColor(ICE);
         g.fillRect(0, 200, 200, 120);
         g.fillRect(275, 600, 200, 120);
         g.fillRect(500, 260, 200, 120);
 
         // Nest
-        g.setColor(new Color(205, 133, 63));
+        g.setColor(LIGHT_ORANGE);
         g.fillOval(750, 650, 200, 100);
-        g.setColor(new Color(122, 75, 29));
+        g.setColor(BROWN);
         g.fillOval(760, 660, 160, 50);
 
-        // === GRASS ===
-        g.setColor(new Color(0, 100, 0));
+        // Grass
+        g.setColor(DARK_GREEN);
         int[] x1 = {390, 415, 440, 465, 490, 515};
         int[] y1 = {430, 400, 430, 400, 430, 400};
         g.drawPolyline(x1, y1, x1.length);
