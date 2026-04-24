@@ -64,7 +64,7 @@ public class GameDisplay extends JFrame {
         g.setColor(DARK_GREEN);
 
         // Top-left grass patch
-        //Initiates the coordinates for each point of the grass
+        //Initiates the coordinates for each point of the grass and moves them to the next coordinates
         int[] x1 = {90, 120, 150, 180, 210, 240, 270};
         int[] y1 = {370, 330, 370, 330, 370, 330, 370};
         g.drawPolyline(x1, y1, x1.length);
