@@ -11,6 +11,7 @@ public class GameEngine implements ActionListener{
     private int gameState;
     private double FRICTION;
     private int score;
+    private ShotMeter meter;
 
     // Constants for state
     public static final int STATE_OPENING = 0;
@@ -20,7 +21,8 @@ public class GameEngine implements ActionListener{
     public GameEngine(){
         gameState = STATE_OPENING;
         activeEgg = new Egg(600,345);
-        window = new GameDisplay(this);
+        meter = new ShotMeter();
+        window = new GameDisplay(this, meter);
     }
 
     // Updates the gamestate depending on egg
@@ -28,10 +30,14 @@ public class GameEngine implements ActionListener{
         if (gameState == STATE_OPENING) {
             activeEgg.updateOpening();
 
-            if (activeEgg.getState()== Egg.STATE_LANDED) {
+            if (activeEgg.getState() == Egg.STATE_LANDED) {
                 gameState = STATE_PLAYING;
             }
         }
+        else if( gameState == STATE_PLAYING){
+            meter.update();
+        }
+
         window.repaint();
     }
 

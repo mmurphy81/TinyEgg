@@ -30,9 +30,10 @@ public class GameDisplay extends JFrame {
     private static final Color DARK_GREEN = new Color(0, 100, 0);
 
 
-    public GameDisplay(GameEngine engine){
+    public GameDisplay(GameEngine engine, ShotMeter meter){
         // Access to backend
         this.engine = engine;
+        this.meter = meter;
 
         this.setTitle("GameDisplay");
         this.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -64,9 +65,12 @@ public class GameDisplay extends JFrame {
     private void myPaint(Graphics g) {
         // If we are in opening stages of the game, draw the begining animation
         if (engine.getGameState() == GameEngine.STATE_OPENING) {
-            drawOpening(g);
-            //this.drawMap2(g);
+            //drawOpening(g);
 
+        }
+        else if(engine.getGameState() == GameEngine.STATE_PLAYING){
+            this.drawMap2(g);
+            meter.drawMeter(g);
         }
 
         // If the egg has landed, then we draw the crack on the egg
