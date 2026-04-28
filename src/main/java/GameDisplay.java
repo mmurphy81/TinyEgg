@@ -1,24 +1,14 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.image.BufferStrategy;
-
 
 public class GameDisplay extends JFrame {
-    // Instance variables
-
-    // Allows access to the shotmeter and backend for the frontend
     private GameEngine engine;
     private ShotMeter meter;
-
-    // the Point where the drag started and where the mouse currently is
     private Point dragStart;
     private Point currentMousePos;
-
-    // Checking to see if user is dragging
     private boolean isDragging;
-
-    // Constants
+    private boolean isCharging;
     public static final int WINDOW_WIDTH = 1000;
     public static final int WINDOW_HEIGHT = 1000;
 
@@ -30,143 +20,22 @@ public class GameDisplay extends JFrame {
     private static final Color DARK_GREEN = new Color(0, 100, 0);
 
 
-    public GameDisplay(GameEngine engine, ShotMeter meter){
-        // Access to backend
+    public GameDisplay(GameEngine engine){
         this.engine = engine;
-        this.meter = meter;
-
         this.setTitle("GameDisplay");
         this.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setVisible(true);
-        createBufferStrategy(2);
     }
 
-    // Bufferstrategy in order for no glitches
-    public void paint(Graphics g){
-        BufferStrategy bf = getBufferStrategy();
-        if (bf == null) {
-            createBufferStrategy(2);
-            return;
-        }
-        Graphics g2 = null;
-        try {
-            g2 = bf.getDrawGraphics();
-            myPaint(g2);
-        }
-        finally {
-            g2.dispose();
-        }
-        bf.show();
-        Toolkit.getDefaultToolkit().sync();
-        this.drawMap2(g);
-    }
-
-    private void myPaint(Graphics g) {
-        // If we are in opening stages of the game, draw the begining animation
-        if (engine.getGameState() == GameEngine.STATE_OPENING) {
-            //drawOpening(g);
-
-        }
-        else if(engine.getGameState() == GameEngine.STATE_PLAYING){
-            this.drawMap2(g);
-            meter.drawMeter(g);
-        }
-
-        // If the egg has landed, then we draw the crack on the egg
-        if (engine.getEgg().getState() == 5) {
-            engine.getEgg().drawCrack(g, (int)engine.getEgg().getX(), (int)engine.getEgg().getY() - 10);
-        }
+    public void paintComponent(Graphics g){
+        g.setColor(Color.GREEN);
+        g.fillRect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     }
 
     private void drawEgg(Graphics g){
 
     }
-
-    // Draw the tree branch
-    private void drawBranch(Graphics g) {
-        g.setColor(new Color(101,67,33));
-        g.fillRect(540, 400, 200, 20);
-    }
-
-    // Draws the begining of the game animatio
-    public void drawOpening(Graphics g) {
-        drawBackground(g);
-        drawTree(g);
-        drawBranch(g);
-        drawNest(g);
-
-        engine.getEgg().draw(g);
-    }
-
-
-    private void drawBackground(Graphics g){
-
-        // sky gradient effect (fake gradient using bands)
-        g.setColor(new Color(135, 206, 235)); // top sky
-        g.fillRect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-
-        g.setColor(new Color(176, 226, 255)); // softer mid sky
-        g.fillRect(0, 0, WINDOW_WIDTH, 500);
-
-        g.setColor(new Color(200, 240, 255)); // near horizon glow
-        g.fillRect(0, 0, WINDOW_WIDTH, 250);
-
-        // ground
-        g.setColor(new Color(85, 155, 70));
-        g.fillRect(0, 650, WINDOW_WIDTH, 350);
-
-        // subtle ground variation (patchy grass feel)
-        g.setColor(new Color(70, 140, 60));
-        for(int i = 0; i < WINDOW_WIDTH; i += 40){
-            g.fillRect(i, 650 + (i % 3) * 3, 20, 100);
-        }
-
-        // distant horizon line
-        g.setColor(new Color(60, 120, 55));
-        g.drawLine(0, 650, WINDOW_WIDTH, 650);
-    }
-
-    private void drawTree(Graphics g){
-
-        // trunk
-        g.setColor(new Color(101, 67, 33));
-        g.fillRect(450, 250, 100, 450);
-
-        // trunk outline (adds depth)
-        g.setColor(Color.BLACK);
-        g.drawRect(450, 250, 100, 450);
-
-        // foliage base
-        g.setColor(new Color(34, 139, 34));
-        g.fillOval(350, 80, 300, 250);
-
-        // extra foliage blobs for shape variation
-        g.setColor(new Color(30, 120, 30));
-        g.fillOval(300, 150, 200, 180);
-        g.fillOval(450, 120, 220, 200);
-
-        // outline for main canopy
-        g.setColor(Color.BLACK);
-        g.drawOval(350, 80, 300, 250);
-    }
-
-    private void drawNest(Graphics g){
-
-        // nest base
-        g.setColor(new Color(139, 69, 19));
-        g.fillOval(560, 350, 120, 50);
-
-        // inner shading
-        g.setColor(new Color(160, 82, 45));
-        g.fillOval(570, 350, 100, 40);
-
-        // outline
-        g.setColor(Color.BLACK);
-        g.drawOval(560, 350, 120, 50);
-    }
-
-    private void drawMap(Graphics g){}
 
 
     private void drawMap1(Graphics g){
@@ -270,7 +139,9 @@ public class GameDisplay extends JFrame {
     public void mouseReleased(MouseEvent e){
 
     }
-
+    public void paint(Graphics g){
+        this.drawMap2(g);
+    }
 
 
 }
