@@ -36,7 +36,10 @@ public class GameEngine implements ActionListener{
         }
         else if( gameState == STATE_PLAYING){
             meter.update();
+            activeEgg.move();
         }
+
+
 
         window.repaint();
     }
@@ -46,7 +49,10 @@ public class GameEngine implements ActionListener{
     }
 
     public void processShot(double deltaX, double deltaY, double multiplier){
+        double vx = deltaX * multiplier;
+        double vy = deltaY * multiplier;
 
+        activeEgg.applyImpulsive(vx, vy);
     }
 
     public int getGameState() {
