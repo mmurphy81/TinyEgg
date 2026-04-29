@@ -19,7 +19,8 @@ public class ShotMeter {
     public void update() {
         if (!isMoving) return;
 
-        barX += direction * 15; // 5 = speed of movement
+        // 15 = speed of movement
+        barX += direction * 15;
 
         // Bounce off edges (red start to green end)
         if (barX <= 100) {

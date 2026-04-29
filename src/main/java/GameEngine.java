@@ -66,6 +66,7 @@ public class GameEngine implements ActionListener{
 
     // Timer for animation
     public void run() {
+        // 90 milliseconds of delay
         Timer timer = new Timer(90, this);
         timer.start();
 
