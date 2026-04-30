@@ -3,7 +3,7 @@ import java.awt.event.ActionListener;
 import javax.swing.Timer;
 
 // Implement actionlistener to create animatinos
-public class GameEngine implements ActionListener{
+public class GameEngine {
     // Instance variables
     private GameDisplay window;
     private Egg activeEgg;
@@ -41,7 +41,6 @@ public class GameEngine implements ActionListener{
 
 
 
-        window.repaint();
     }
 
     public Egg getEgg() {
@@ -75,15 +74,17 @@ public class GameEngine implements ActionListener{
     // Timer for animation
     public void run() {
         // 90 milliseconds of delay
-        Timer timer = new Timer(90, this);
-        timer.start();
+        while (true) {
+            update();
+            window.render();   // 👈 custom render method
+            try {
+                Thread.sleep(16); // ~60 FPS
+            } catch (InterruptedException e) {}
+        }
 
     }
 
-    public void actionPerformed(ActionEvent e){
 
-        update();
-    }
 
     public static void main(String[] args) {
         GameEngine g = new GameEngine();

@@ -42,41 +42,23 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
         this.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setVisible(true);
-
         createBufferStrategy(2);
+
     }
 
-    // Bufferstrategy in order for no glitches
-    public void paint(Graphics g){
-        BufferStrategy bf = getBufferStrategy();
-        if (bf == null) {
-            createBufferStrategy(2);
-            return;
-        }
-        Graphics g2 = null;
-        try {
-            g2 = bf.getDrawGraphics();
-            myPaint(g2);
-        }
-        finally {
-            g2.dispose();
-        }
-        bf.show();
-        Toolkit.getDefaultToolkit().sync();
-        //this.drawMap2(g);
-    }
+
 
     private void myPaint(Graphics g) {
         // Draw white screen each time so that old arrows are not remaining
-        drawOpening(g);
         // If we are in opening stages of the game, draw the begining animation
         if (engine.getGameState() == GameEngine.STATE_OPENING) {
-            //drawOpening(g);
+            drawOpening(g);
 
         }
         else if(engine.getGameState() == GameEngine.STATE_PLAYING){
             this.drawMap2(g);
             meter.drawMeter(g);
+            engine.getEgg().draw(g);
         }
 
         // Only draw the egg when it is not moving and if the user is dragging
@@ -321,7 +303,24 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
     @Override
     public void mouseDragged(MouseEvent e){
         currentMousePos = e.getPoint();
-        repaint();
+    }
+
+    public void render() {
+        BufferStrategy bf = getBufferStrategy();
+        if (bf == null) {
+            createBufferStrategy(2);
+            return;
+        }
+
+        Graphics g = bf.getDrawGraphics();
+        try {
+            myPaint(g);
+        } finally {
+            g.dispose();
+        }
+
+        bf.show();
+        Toolkit.getDefaultToolkit().sync();
     }
 
     @Override
