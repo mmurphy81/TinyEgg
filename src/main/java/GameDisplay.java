@@ -4,7 +4,7 @@ import java.awt.event.*;
 import java.awt.image.BufferStrategy;
 
 
-public class GameDisplay extends JFrame {
+public class GameDisplay extends JFrame implements MouseListener, MouseMotionListener{
     // Instance variables
 
     // Allows access to the shotmeter and backend for the frontend
@@ -34,11 +34,15 @@ public class GameDisplay extends JFrame {
         // Access to backend
         this.engine = engine;
         this.meter = meter;
+        // Create mouse listener so that the computer knows when user is shooting
+        addMouseListener(this);
+        addMouseMotionListener(this);
 
         this.setTitle("GameDisplay");
         this.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setVisible(true);
+
         createBufferStrategy(2);
     }
 
@@ -59,10 +63,12 @@ public class GameDisplay extends JFrame {
         }
         bf.show();
         Toolkit.getDefaultToolkit().sync();
-        this.drawMap2(g);
+        //this.drawMap2(g);
     }
 
     private void myPaint(Graphics g) {
+        // Draw white screen each time so that old arrows are not remaining
+        drawOpening(g);
         // If we are in opening stages of the game, draw the begining animation
         if (engine.getGameState() == GameEngine.STATE_OPENING) {
             //drawOpening(g);
@@ -71,6 +77,11 @@ public class GameDisplay extends JFrame {
         else if(engine.getGameState() == GameEngine.STATE_PLAYING){
             this.drawMap2(g);
             meter.drawMeter(g);
+        }
+
+        // Only draw the egg when it is not moving and if the user is dragging
+        if (isDragging && !engine.getEgg().isMoving()) {
+            drawShotPreview(g);
         }
 
         // If the egg has landed, then we draw the crack on the egg
@@ -258,18 +269,97 @@ public class GameDisplay extends JFrame {
     private void drawUI(Graphics g){
 
     }
+
+    // Draws the red arrow that shows the shot preview
     private void drawShotPreview(Graphics g){
+        // If we don't konw where the mouse position is or if they haven't started dragging
+        // Do not do anything
+            if (dragStart == null || currentMousePos == null) return;
+
+            // Otherwise set color to red
+            g.setColor(Color.RED);
+
+            // These are the coordinates for beginning of mouse beign dragged and end
+            int x1 = dragStart.x;
+            int y1 = dragStart.y;
+            int x2 = currentMousePos.x;
+            int y2 = currentMousePos.y;
+
+            // main line
+            g.drawLine(x1, y1, x2, y2);
+
+            // arrow head
+            int dx = x2 - x1;
+            int dy = y2 - y1;
+
+            // This is the angle which we are shooting the egg
+            double angle = Math.atan2(dy, dx);
+            int size = 10;
+
+            // Creates the v shape at the tiip of the line to make it an arrow
+            int xA = (int)(x2 - size * Math.cos(angle - Math.PI / 6));
+            int yA = (int)(y2 - size * Math.sin(angle - Math.PI / 6));
+
+            int xB = (int)(x2 - size * Math.cos(angle + Math.PI / 6));
+            int yB = (int)(y2 - size * Math.sin(angle + Math.PI / 6));
+
+            g.drawLine(x2, y2, xA, yA);
+            g.drawLine(x2, y2, xB, yB);
+
 
     }
+    @Override
     public void mousePressed(MouseEvent e){
+            // ONLY allow new shot if egg is not moving
+            if (engine.getEgg().isMoving()) return;
 
+            dragStart = e.getPoint();
+            currentMousePos = e.getPoint();
+            isDragging = true;
     }
+
+    @Override
     public void mouseDragged(MouseEvent e){
-
+        currentMousePos = e.getPoint();
+        repaint();
     }
+
+    @Override
     public void mouseReleased(MouseEvent e){
+        // Check whether or not the user is dragging to shoot
+        if (isDragging) {
+            // Find the exact point where the user released the mouse after dragging
+            Point release = e.getPoint();
 
+            // Set speed equal to the distance where they shot to distance where they released
+            double dx = release.x - dragStart.x;
+            double dy = release.y - dragStart.y;
+
+            // We need the dx and dy to be negative since we shoot in the opposite direction
+            // This process shot is going to output the right speed for x and y
+            engine.processShot(-dx, -dy, 0.1);
+
+            // Set isDragging to false so we don't have any glitches
+            isDragging = false;
+
+            // clear drag so no ghost lines
+            dragStart = null;
+            currentMousePos = null;
+        }
     }
+
+
+    @Override
+    public void mouseClicked(MouseEvent e){}
+
+    @Override
+    public void mouseEntered(MouseEvent e){}
+
+    @Override
+    public void mouseExited(MouseEvent e){}
+
+    @Override
+    public void mouseMoved(MouseEvent e){}
 
 
 
