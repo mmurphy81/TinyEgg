@@ -22,12 +22,22 @@ public class GameDisplay extends JFrame {
     public static final int WINDOW_WIDTH = 1000;
     public static final int WINDOW_HEIGHT = 1000;
 
+    //Magic numbers for all of our colors so the colors are easier to understand
+    public  static  final Color GRASS_2 = new Color(85, 155, 70);
+    public static final Color GRASS_3 = new Color(70, 140, 60);
+    public static final Color GRASS_H = new Color(60, 120, 55);
+    public static final Color TREE_LEAF = new Color(34, 139, 34);
+    public static Color TREE_LEAF2 = new Color(30, 120, 30);
     private static final Color GRASS = new Color(34, 139, 34);
+    private static final Color DARK_GREEN = new Color(0, 100, 0);
+    private static final Color TOP_SKY = new Color(135, 206, 235);
+    private static final Color MID_SKY = new Color(176, 226, 255);
+    private static final Color HORIZON_SKY = new Color(200, 240, 255);
     private static final Color ICE = new Color(0, 191, 255);
     private static final Color CORAL = new Color(220, 80, 80);
     private static final Color LIGHT_ORANGE = new Color(205, 133, 63);
     private static final Color BROWN = new Color(122, 75, 29);
-    private static final Color DARK_GREEN = new Color(0, 100, 0);
+    public static final Color TREE_BASE = new Color(101, 67, 33);
 
 
     public GameDisplay(GameEngine engine, ShotMeter meter){
@@ -85,7 +95,7 @@ public class GameDisplay extends JFrame {
 
     // Draw the tree branch
     private void drawBranch(Graphics g) {
-        g.setColor(new Color(101,67,33));
+        g.setColor(BROWN);
         g.fillRect(540, 400, 200, 20);
     }
 
@@ -103,34 +113,34 @@ public class GameDisplay extends JFrame {
     private void drawBackground(Graphics g){
 
         // sky gradient effect (fake gradient using bands)
-        g.setColor(new Color(135, 206, 235)); // top sky
+        g.setColor(TOP_SKY); // top sky
         g.fillRect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-        g.setColor(new Color(176, 226, 255)); // softer mid sky
+        g.setColor(MID_SKY); // softer mid sky
         g.fillRect(0, 0, WINDOW_WIDTH, 500);
 
-        g.setColor(new Color(200, 240, 255)); // near horizon glow
+        g.setColor(HORIZON_SKY); // near horizon glow
         g.fillRect(0, 0, WINDOW_WIDTH, 250);
 
         // ground
-        g.setColor(new Color(85, 155, 70));
+        g.setColor(GRASS_2);
         g.fillRect(0, 650, WINDOW_WIDTH, 350);
 
         // subtle ground variation (patchy grass feel)
-        g.setColor(new Color(70, 140, 60));
+        g.setColor(GRASS_3);
         for(int i = 0; i < WINDOW_WIDTH; i += 40){
             g.fillRect(i, 650 + (i % 3) * 3, 20, 100);
         }
 
         // distant horizon line
-        g.setColor(new Color(60, 120, 55));
+        g.setColor(GRASS_H);
         g.drawLine(0, 650, WINDOW_WIDTH, 650);
     }
 
     private void drawTree(Graphics g){
 
         // trunk
-        g.setColor(new Color(101, 67, 33));
+        g.setColor(TREE_BASE);
         g.fillRect(450, 250, 100, 450);
 
         // trunk outline (adds depth)
@@ -138,11 +148,11 @@ public class GameDisplay extends JFrame {
         g.drawRect(450, 250, 100, 450);
 
         // foliage base
-        g.setColor(new Color(34, 139, 34));
+        g.setColor(TREE_LEAF);
         g.fillOval(350, 80, 300, 250);
 
         // extra foliage blobs for shape variation
-        g.setColor(new Color(30, 120, 30));
+        g.setColor(TREE_LEAF2);
         g.fillOval(300, 150, 200, 180);
         g.fillOval(450, 120, 220, 200);
 
@@ -154,11 +164,11 @@ public class GameDisplay extends JFrame {
     private void drawNest(Graphics g){
 
         // nest base
-        g.setColor(new Color(139, 69, 19));
+        g.setColor(BROWN);
         g.fillOval(560, 350, 120, 50);
 
         // inner shading
-        g.setColor(new Color(160, 82, 45));
+        g.setColor(LIGHT_ORANGE);
         g.fillOval(570, 350, 100, 40);
 
         // outline
