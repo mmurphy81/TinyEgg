@@ -68,8 +68,7 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
 
     private void myPaint(Graphics g) {
         // Draw white screen each time so that old arrows are not remaining
-        g.setColor(Color.WHITE);
-        g.fillRect(0, 0, getWidth(), getHeight());
+        drawOpening(g);
         // If we are in opening stages of the game, draw the begining animation
         if (engine.getGameState() == GameEngine.STATE_OPENING) {
             //drawOpening(g);
@@ -327,14 +326,20 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
 
     @Override
     public void mouseReleased(MouseEvent e){
+        // Check whether or not the user is dragging to shoot
         if (isDragging) {
+            // Find the exact point where the user released the mouse after dragging
             Point release = e.getPoint();
 
+            // Set speed equal to the distance where they shot to distance where they released
             double dx = release.x - dragStart.x;
             double dy = release.y - dragStart.y;
 
+            // We need the dx and dy to be negative since we shoot in the opposite direction
+            // This process shot is going to output the right speed for x and y
             engine.processShot(-dx, -dy, 0.1);
 
+            // Set isDragging to false so we don't have any glitches
             isDragging = false;
 
             // clear drag so no ghost lines

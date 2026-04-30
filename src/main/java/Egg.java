@@ -143,6 +143,7 @@ public class Egg {
     }
 
     public void applyImpulsive(double vx, double vy){
+        // Takes in the speed of the shot and sets it into the velocity of the x and y for the egg
         this.velX = vx;
         this.velY = vy;
     }
