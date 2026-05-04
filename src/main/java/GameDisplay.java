@@ -28,15 +28,15 @@ public class GameDisplay extends JFrame {
     public static final Color GRASS_H = new Color(60, 120, 55);
     public static final Color TREE_LEAF = new Color(34, 139, 34);
     public static Color TREE_LEAF2 = new Color(30, 120, 30);
-    private static final Color GRASS = new Color(34, 139, 34);
-    private static final Color DARK_GREEN = new Color(0, 100, 0);
-    private static final Color TOP_SKY = new Color(135, 206, 235);
-    private static final Color MID_SKY = new Color(176, 226, 255);
-    private static final Color HORIZON_SKY = new Color(200, 240, 255);
-    private static final Color ICE = new Color(0, 191, 255);
-    private static final Color CORAL = new Color(220, 80, 80);
-    private static final Color LIGHT_ORANGE = new Color(205, 133, 63);
-    private static final Color BROWN = new Color(122, 75, 29);
+    public static final Color GRASS = new Color(34, 139, 34);
+    public static final Color DARK_GREEN = new Color(0, 100, 0);
+    public static final Color TOP_SKY = new Color(135, 206, 235);
+    public static final Color MID_SKY = new Color(176, 226, 255);
+    public static final Color HORIZON_SKY = new Color(200, 240, 255);
+    public static final Color ICE = new Color(0, 191, 255);
+    public static final Color CORAL = new Color(220, 80, 80);
+    public static final Color LIGHT_ORANGE = new Color(205, 133, 63);
+    public static final Color BROWN = new Color(122, 75, 29);
     public static final Color TREE_BASE = new Color(101, 67, 33);
 
 
@@ -69,7 +69,6 @@ public class GameDisplay extends JFrame {
         }
         bf.show();
         Toolkit.getDefaultToolkit().sync();
-        this.drawMap2(g);
     }
 
     private void myPaint(Graphics g) {
@@ -79,7 +78,7 @@ public class GameDisplay extends JFrame {
 
         }
         else if(engine.getGameState() == GameEngine.STATE_PLAYING){
-            this.drawMap2(g);
+            this.drawMap1(g);
             meter.drawMeter(g);
         }
 
@@ -189,10 +188,10 @@ public class GameDisplay extends JFrame {
         g.fillRect(113, 105, 245, 197);
         g.fillRect(396, 487, 283, 237);
 
-        // Drawing the walls
-        g.setColor(CORAL);
-        g.fillRect(519, 79, 38, 316);
-        g.fillRect(245, 632, 38, 290);
+        engine.addLevel1Walls();
+        for (int i =0; i<engine.getObstacles().size(); i++){
+            engine.getObstacles().get(i).draw(g);
+        }
 
         // Bird's nest (top right)
         g.setColor(LIGHT_ORANGE);
@@ -226,16 +225,12 @@ public class GameDisplay extends JFrame {
         g.setColor(GRASS);
         g.fillRect(0, 0, getWidth(), getHeight());
 
-        // Right side walls
-        g.setColor(CORAL);
-        g.fillRect(200, 0, 25, 320);
-        g.fillRect(250, 500, 25, 300);
-        g.fillRect(475, 0, 25, 300);
+        //Draws the walls
+        engine.addLevel2Walls();
+        for (int i =0; i<engine.getObstacles().size(); i++){
+            engine.getObstacles().get(i).draw(g);
+        }
 
-        //Left side walls
-        g.fillRect(700, 0, 25, 400);
-        g.fillRect(475, 470, 25, 300);
-        g.fillRect(900, 0, 25, 600);
 
         // Ice
         g.setColor(ICE);

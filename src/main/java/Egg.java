@@ -11,11 +11,12 @@ public class Egg {
     private static final int RADIUS = 15;
     private boolean isFalling;
     private int state;
+    private Obstacle obstacle;
 
 
     // Constants for the dimensinos of the egg and of the ground and gravity
-    private static final int WIDTH = 40;
-    private static final int HEIGHT = 55;
+    public static final int WIDTH = 40;
+    public static final int HEIGHT = 55;
     private static final int GRAVITY = 1;
     private static final int FLOOR = 700;
 
@@ -27,7 +28,7 @@ public class Egg {
     public static final int STATE_FALL = 4;
     public static final int STATE_LANDED = 5;
 
-    // Timer needed for animatino
+    // Timer needed for animation
     private int animationTimer;
 
     // Constructor
@@ -146,4 +147,13 @@ public class Egg {
     public int getHealth() {
         return health;
     }
+
+    public void whenCollided(){
+        if (obstacle.hasCollided(this)){
+            // TODO fix this
+            x*=-1;
+            y*=-1;
+        }
+    }
+
 }

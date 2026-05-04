@@ -1,59 +1,59 @@
 import java.awt.*;
 
-abstract class Obstacle {
+class Obstacle {
     private int x;
     private int y;
     private int width;
     private int height;
 
-    public Rectangle getBounds(){
+    public Obstacle(int x, int y, int width, int height) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public Rectangle getBounds() {
         return null;
     }
 
-    public void onCollision(Egg egg){
+    public boolean hasCollided(Egg egg) {
+        double ex1 = egg.getX();
+        double ex2 = egg.getX() + egg.WIDTH;
+        double ey1 = egg.getY();
+        double ey2 = egg.getY() + egg.HEIGHT;
+
+        int wx2 = x + width;
+        int wy2 = y + height;
+        if (ex1 < wx2 && ey1 < wy2 && ex2 > x && ey2 > y) {
+            return true;
+        }
+        return false;
+    }
+
+    //Only gets called if you know the egg has collided
+    public boolean hitTopOrBottom(Egg egg){
+        return false;
+    }
+
+    public void draw(Graphics g) {
 
     }
 
-    public void draw(Graphics g){
-
-    }
-
-    public class SwingDoor extends Obstacle{
-
-        @Override
-        public void onCollision(Egg egg) {
-            super.onCollision(egg);
-        }
-        @Override
-        public void draw(Graphics g) {
-            super.draw(g);
-        }
-
-        public void update(){
-
-        }
-    }
-
-    public class GrassPatch extends Obstacle{
-        @Override
-        public void onCollision(Egg egg) {
-            super.onCollision(egg);
-        }
-        @Override
-        public void draw(Graphics g) {
-            super.draw(g);
-        }
-
-    }
-    public class Wall extends Obstacle{
-        @Override
-        public void onCollision(Egg egg) {
-            super.onCollision(egg);
-        }
-
-        @Override
-        public void draw(Graphics g) {
-            super.draw(g);
-        }
-    }
 }
