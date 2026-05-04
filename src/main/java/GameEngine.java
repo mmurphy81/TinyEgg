@@ -57,21 +57,21 @@ public class GameEngine {
 
     private void runTutorial() {
 
-        // Scene 1: show goal
+        // 0–120 → Explain goal
         if (tutorialTimer < 120) {
             // just visuals
         }
 
-        // Scene 2: aim (fake mouse pulls back)
+        // 120–240 → show pulling back
         else if (tutorialTimer < 240) {
-            // handled in GameDisplay
+            // handled visually
         }
 
-        // Scene 3: FIRST SHOT (goes into nest)
+        // 240 → FIRE PERFECT SHOT
         else if (tutorialTimer == 240) {
 
-            double targetX = 600;
-            double targetY = 350;
+            double targetX = 760; // nest position
+            double targetY = 660;
 
             double dx = targetX - activeEgg.getX();
             double dy = targetY - activeEgg.getY();
@@ -81,39 +81,58 @@ public class GameEngine {
             dx /= length;
             dy /= length;
 
-            // stronger so it actually reaches
-            activeEgg.applyImpulsive(dx * 15, dy * 15);
+            // Controlled power so it lands nicely
+            activeEgg.applyImpulsive(dx * 10, dy * 10);
         }
 
-        // let first shot move
-        else if (tutorialTimer > 240 && tutorialTimer < 360) {
+        // 240–360 → let it travel
+        else if (tutorialTimer < 360) {
             activeEgg.move();
         }
 
-        // RESET for second example (VERY IMPORTANT)
+        // 360 → RESET for bad example
         else if (tutorialTimer == 360) {
-            activeEgg = new Egg(600, 345); // keep your original position
+            activeEgg = new Egg(300, 500);
         }
 
-        // SECOND SHOT (bad shot → hits obstacle)
+        // 360–420 → explain obstacles
+        else if (tutorialTimer < 420) {
+            // pause for text
+        }
+
+        // 420–480 → drag again (bad angle)
+        else if (tutorialTimer < 480) {
+            // fake mouse handles this
+        }
+
+        // 480 → BAD SHOT INTO WALL
         else if (tutorialTimer == 480) {
-            activeEgg.applyImpulsive(-8, 2);
+            activeEgg.applyImpulsive(6, -4); // angled into obstacle
         }
 
-        // move second shot
-        else if (tutorialTimer > 480 && tutorialTimer < 600) {
+        // 480–600 → movement + collision
+        else if (tutorialTimer < 600) {
             activeEgg.move();
 
             double ex = activeEgg.getX();
             double ey = activeEgg.getY();
 
-            // simple collision with obstacle
+            // collision with your block at (450,450)
             if (ex + 40 > 450 && ex < 500 && ey + 55 > 450 && ey < 500) {
-                activeEgg.applyImpulsive(-activeEgg.getVelX() * 0.7, -5);
+                activeEgg.applyImpulsive(-5, -6); // bounce back
+                tutorialTimer = 560; // prevent spam bouncing
             }
         }
-        // end tutorial
+
+        // END
+        // 600–780 → PAUSE AFTER SECOND SHOT
+        else if (tutorialTimer < 780) {
+            // do nothing, just let player see result
+        }
+
+// AFTER PAUSE → GO TO OPENING
         else {
+            activeEgg = new Egg(600, 350);
             gameState = STATE_OPENING;
         }
     }

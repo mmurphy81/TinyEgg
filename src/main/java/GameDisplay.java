@@ -395,17 +395,52 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
 
         int t = engine.getTutorialTimer();
 
-        if (t < 240) {
-            double progress = t / 240.0; // goes from 0 → 1
-            fakeMouse.x = (int)(300 - 80 * progress);
-            fakeMouse.y = (int)(500 + 80 * progress);
-        }
-        else {
-            // After release, keep it at release point
-            fakeMouse.x = 220;
-            fakeMouse.y = 580;
+// START ON EGG
+        if (t < 60) {
+            fakeMouse.x = 300;
+            fakeMouse.y = 500;
         }
 
+// WAIT (no movement)
+        else if (t < 120) {
+            fakeMouse.x = 300;
+            fakeMouse.y = 500;
+        }
+
+// DRAG BACK (smooth pull)
+        // FIRST DRAG
+        else if (t < 240) {
+            double progress = (t - 120) / 120.0;
+
+            fakeMouse.x = (int)(300 - 120 * progress);
+            fakeMouse.y = (int)(500 - 120 * progress);
+        }
+
+// HOLD AFTER FIRST SHOT
+        else if (t < 360) {
+            fakeMouse.x = 180;
+            fakeMouse.y = 380;
+        }
+
+// RESET FOR SECOND SHOT
+        else if (t < 420) {
+            fakeMouse.x = 300;
+            fakeMouse.y = 500;
+        }
+
+// SECOND DRAG (BAD AIM)
+        else if (t < 480) {
+            double progress = (t - 420) / 60.0;
+
+            fakeMouse.x = (int)(300 - 100 * progress);
+            fakeMouse.y = (int)(500 + 140 * progress); // slight angle difference
+        }
+
+// HOLD SECOND RELEASE
+        else {
+            fakeMouse.x = 200;
+            fakeMouse.y = 450;
+        }
         // text instructions
         g.setColor(Color.BLACK);
         g.setFont(new Font("Arial", Font.BOLD, 18));
@@ -413,24 +448,29 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
         if (t < 120) {
             g.drawString("Goal: Get the egg into the nest!", 200, 100);
         }
-        else if (t < 240) {
-            g.drawString("Pull back to aim...", 250, 100);
-
+        else if (t < 240 || (t >= 420 && t < 480)) {
+            g.drawString("Click and drag backwards to aim", 180, 100);
             drawArrow(g2);
         }
-        else if (t < 360) {
+        else if (t < 300) {
             g.drawString("Release to shoot!", 260, 100);
         }
+        else if (t < 360) {
+            g.drawString("Perfect shot!", 280, 100);
+        }
+        else if (t < 420) {
+            g.drawString("But watch out for obstacles...", 200, 100);
+        }
+        else if (t < 480) {
+            g.drawString("Bad aim can cause collisions!", 180, 100);
+        }
         else {
-            g.drawString("Avoid obstacles!", 260, 100);
+            g.drawString("Avoid obstacles to protect your egg!", 150, 100);
 
-            if (t > 360 && t < 400) {
-                // FLASH
+            // impact feedback
+            if (t > 500 && t < 540) {
                 g.setColor(new Color(255, 0, 0, 120));
                 g.fillRect(0, 0, getWidth(), getHeight());
-
-                // SHAKE EFFECT
-                g.translate((int)(Math.random() * 10 - 5), 0);
             }
         }
     }
