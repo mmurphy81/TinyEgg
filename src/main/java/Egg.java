@@ -150,9 +150,15 @@ public class Egg {
 
     public void whenCollided(){
         if (obstacle.hasCollided(this)){
-            // TODO fix this
-            x*=-1;
-            y*=-1;
+            if (obstacle instanceof Wall){
+                // TODO fix this
+                x*=-1;
+                y*=-1;
+            }
+            if(obstacle instanceof Ice){
+                velX*=10;
+                velY*=10;
+            }
         }
     }
 

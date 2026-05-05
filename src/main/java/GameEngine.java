@@ -104,6 +104,11 @@ public class GameEngine implements ActionListener{
         obstacles.add(new Wall(900, 0, 25, 600));
     }
 
+    public void addLevel1Ice(){
+        obstacles.add((new Ice(113, 105, 245, 197)));
+        obstacles.add((new Ice(396, 487, 283, 237)));
+    }
+
     public static void main(String[] args) {
         GameEngine g = new GameEngine();
         g.run();

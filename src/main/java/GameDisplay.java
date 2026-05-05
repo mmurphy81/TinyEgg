@@ -183,12 +183,11 @@ public class GameDisplay extends JFrame {
         g.setColor(GRASS);
         g.fillRect(0, 0, getWidth(), getHeight());
 
-        // Drawing the ice
-        g.setColor(ICE);
-        g.fillRect(113, 105, 245, 197);
-        g.fillRect(396, 487, 283, 237);
-
+        // TODO MM move to backend after Ryans code
+        engine.addLevel1Ice();
         engine.addLevel1Walls();
+
+        //Drawing all the obstacles
         for (int i =0; i<engine.getObstacles().size(); i++){
             engine.getObstacles().get(i).draw(g);
         }

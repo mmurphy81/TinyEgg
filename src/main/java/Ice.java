@@ -12,6 +12,7 @@ public class Ice extends Obstacle {
 
     @Override
     public void draw(Graphics g) {
-        super.draw(g);
+        g.setColor(GameDisplay.ICE);
+        g.fillRect(getX(), getY(), getWidth(), getHeight());
     }
 }
