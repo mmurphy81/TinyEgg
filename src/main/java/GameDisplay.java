@@ -184,8 +184,7 @@ public class GameDisplay extends JFrame {
         g.fillRect(0, 0, getWidth(), getHeight());
 
         // TODO MM move to backend after Ryans code
-        engine.addLevel1Ice();
-        engine.addLevel1Walls();
+        engine.addLevel1Obstacles();
 
         //Drawing all the obstacles
         for (int i =0; i<engine.getObstacles().size(); i++){
@@ -199,14 +198,16 @@ public class GameDisplay extends JFrame {
         g.setColor(BROWN);
         g.fillOval(750, 80, 160, 50);
 
-        // Drawing the grass
-        g.setColor(DARK_GREEN);
 
+
+        // Drawing the grass details that the user sees
+        g.setColor(DARK_GREEN);
         // Top-left grass patch
         //Initiates the coordinates for each point of the grass and moves them to the next coordinates
         int[] x1 = {90, 120, 150, 180, 210, 240, 270};
         int[] y1 = {370, 330, 370, 330, 370, 330, 370};
         g.drawPolyline(x1, y1, x1.length);
+
 
         // Top-right grass patch
         int[] x2 = {620, 650, 680, 710, 740, 770, 800};
@@ -225,17 +226,11 @@ public class GameDisplay extends JFrame {
         g.fillRect(0, 0, getWidth(), getHeight());
 
         //Draws the walls
-        engine.addLevel2Walls();
+        engine.addLevel2Obstacles();
         for (int i =0; i<engine.getObstacles().size(); i++){
             engine.getObstacles().get(i).draw(g);
         }
 
-
-        // Ice
-        g.setColor(ICE);
-        g.fillRect(0, 200, 200, 120);
-        g.fillRect(275, 600, 200, 120);
-        g.fillRect(500, 260, 200, 120);
 
         // Nest
         g.setColor(LIGHT_ORANGE);

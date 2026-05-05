@@ -84,12 +84,24 @@ public class GameEngine implements ActionListener{
         update();
     }
 
-    public void addLevel1Walls(){
+    public void addLevel1Obstacles(){
         obstacles.clear();
+        addLevel1Ice();
+        addLevel1Walls();
+        addLevel1GrassP();
+    }
+    public void addLevel2Obstacles(){
+        obstacles.clear();
+        addLevel2Ice();
+        addLevel2Walls();
+        addLevel2GrassP();
+    }
+    public void addLevel1Walls(){
         obstacles.add(new Wall(519, 79, 38, 316));
         obstacles.add(new Wall(245, 632, 38, 290));
 
     }
+
     public void addLevel2Walls(){
         obstacles.clear();
 
@@ -108,7 +120,23 @@ public class GameEngine implements ActionListener{
         obstacles.add((new Ice(113, 105, 245, 197)));
         obstacles.add((new Ice(396, 487, 283, 237)));
     }
+    public void addLevel2Ice(){
+        obstacles.add((new Ice(0, 200, 200, 120)));
+        obstacles.add((new Ice(275, 600, 200, 120)));
+        obstacles.add((new Ice(500, 260, 200, 120)));
+    }
 
+    public void addLevel1GrassP(){
+        obstacles.add(new GrassPatch(620, 190, 180, 100));
+        obstacles.add(new GrassPatch(620, 190, 180, 100));
+        obstacles.add(new GrassPatch(680, 710, 180, 100));
+    }
+
+    public void addLevel2GrassP(){
+        obstacles.add(new GrassPatch(390, 430, 125, 100));
+        obstacles.add(new GrassPatch(720,530, 128, 100));
+        obstacles.add(new GrassPatch(560, 720, 140, 100));
+    }
     public static void main(String[] args) {
         GameEngine g = new GameEngine();
         g.run();

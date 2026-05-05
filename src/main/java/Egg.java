@@ -159,6 +159,10 @@ public class Egg {
                 velX*=10;
                 velY*=10;
             }
+            if(obstacle instanceof GrassPatch){
+                velX/=10;
+                velY/=10;
+            }
         }
     }
 
