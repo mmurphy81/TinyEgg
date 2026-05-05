@@ -24,6 +24,10 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
     public static final int WINDOW_WIDTH = 1000;
     public static final int WINDOW_HEIGHT = 1000;
 
+    private double pendingVX = 0;
+    private double pendingVY = 0;
+    private boolean waitingForMeter = false;
+
     private static final Color GRASS = new Color(34, 139, 34);
     private static final Color ICE = new Color(0, 191, 255);
     private static final Color CORAL = new Color(220, 80, 80);
@@ -60,7 +64,11 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
 
         }
         else if(engine.getGameState() == GameEngine.STATE_PLAYING){
-            this.drawMap2(g);
+            if (engine.getCurrentMap() == 1) {
+                drawMap1(g);
+            } else {
+                drawMap2(g);
+            }
             meter.drawMeter(g);
             engine.getEgg().draw(g);
         }
@@ -312,10 +320,35 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
             engine.skipToOpening(); // allow skipping mid-animation
         }
 
+        // In mousePressed(MouseEvent e):
         else if (engine.getGameState() == GameEngine.STATE_PLAYING) {
-            dragStart = e.getPoint();
-            currentMousePos = e.getPoint();
-            isDragging = true;
+            if (waitingForMeter) {
+                String zone = meter.lockAndGetZone();
+                double vx = pendingVX;
+                double vy = pendingVY;
+
+                if (zone.equals("yellow")) {
+                    double angle = (Math.random() - 0.5) * 0.4;
+                    double speed = Math.sqrt(vx*vx + vy*vy) * (0.7 + Math.random() * 0.4);
+                    double baseAngle = Math.atan2(vy, vx) + angle;
+                    vx = Math.cos(baseAngle) * speed;
+                    vy = Math.sin(baseAngle) * speed;
+                } else if (zone.equals("red")) {
+                    double angle = (Math.random() - 0.5) * 1.2;
+                    double speed = Math.sqrt(vx*vx + vy*vy) * (0.3 + Math.random() * 0.5);
+                    double baseAngle = Math.atan2(vy, vx) + angle;
+                    vx = Math.cos(baseAngle) * speed;
+                    vy = Math.sin(baseAngle) * speed;
+                }
+
+                engine.processShotDirect(vx, vy);
+                meter.reset();
+                waitingForMeter = false;
+            } else {
+                dragStart = e.getPoint();       // ✅ e exists here
+                currentMousePos = e.getPoint(); // ✅ e exists here
+                isDragging = true;
+            }
         }
     }
 
@@ -507,25 +540,22 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
 
     @Override
     public void mouseReleased(MouseEvent e){
-        // Check whether or not the user is dragging to shoot
         if (isDragging) {
-            // Find the exact point where the user released the mouse after dragging
             Point release = e.getPoint();
 
-            // Set speed equal to the distance where they shot to distance where they released
             double dx = release.x - dragStart.x;
             double dy = release.y - dragStart.y;
 
-            // We need the dx and dy to be negative since we shoot in the opposite direction
-            // This process shot is going to output the right speed for x and y
-            engine.processShot(-dx, -dy, 0.1);
-
-            // Set isDragging to false so we don't have any glitches
+            // Store shot but don't fire yet
+            pendingVX = -dx * 0.1;
+            pendingVY = -dy * 0.1;
             isDragging = false;
-
-            // clear drag so no ghost lines
             dragStart = null;
             currentMousePos = null;
+
+            // Activate the meter — egg fires only after user clicks to lock it
+            meter.activate();
+            waitingForMeter = true;
         }
     }
 

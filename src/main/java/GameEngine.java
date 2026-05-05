@@ -1,3 +1,4 @@
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.Timer;
@@ -13,6 +14,8 @@ public class GameEngine {
     private int score;
     private ShotMeter meter;
     private int tutorialTimer;
+    private int currentMap = 1;
+
 
     // Constants for state
     public static final int STATE_MENU = 0;
@@ -52,8 +55,12 @@ public class GameEngine {
             else if (gameState == STATE_PLAYING) {
                 meter.update();
                 activeEgg.move();
+                checkNestEntry();
             }
         }
+    public void processShotDirect(double vx, double vy) {
+        activeEgg.applyImpulsive(vx, vy);
+    }
 
     private void runTutorial() {
 
@@ -167,7 +174,25 @@ public class GameEngine {
 
     }
     public void checkNestEntry(){
+        Rectangle nestBounds;
+        if (currentMap == 1) {
+            nestBounds = new Rectangle(736, 66, 200, 100); // map1 nest
+        } else {
+            nestBounds = new Rectangle(750, 650, 200, 100); // map2 nest
+        }
 
+        Rectangle eggBounds = new Rectangle((int)activeEgg.getX(), (int)activeEgg.getY(), 40, 55);
+
+        if (nestBounds.intersects(eggBounds) && !activeEgg.isMoving()) {
+            currentMap = currentMap == 1 ? 2 : 1; // toggle maps
+            activeEgg = new Egg(300, 645); // reset egg to ground level
+        }
+    }
+
+
+    // Add getter:
+    public int getCurrentMap() {
+        return currentMap;
     }
 
     public String getFinalResult(){
