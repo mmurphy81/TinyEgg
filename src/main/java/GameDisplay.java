@@ -18,9 +18,15 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
     // Checking to see if user is dragging
     private boolean isDragging;
 
+    private Point fakeMouse = new Point(300, 500);
+
     // Constants
     public static final int WINDOW_WIDTH = 1000;
     public static final int WINDOW_HEIGHT = 1000;
+
+    private double pendingVX = 0;
+    private double pendingVY = 0;
+    private boolean waitingForMeter = false;
 
     private static final Color GRASS = new Color(34, 139, 34);
     private static final Color ICE = new Color(0, 191, 255);
@@ -29,6 +35,8 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
     private static final Color BROWN = new Color(122, 75, 29);
     private static final Color DARK_GREEN = new Color(0, 100, 0);
 
+    Rectangle watchButton = new Rectangle(250, 300, 200, 50);
+    Rectangle skipButton = new Rectangle(250, 400, 200, 50);
 
     public GameDisplay(GameEngine engine, ShotMeter meter){
         // Access to backend
@@ -56,7 +64,11 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
 
         }
         else if(engine.getGameState() == GameEngine.STATE_PLAYING){
-            this.drawMap2(g);
+            if (engine.getCurrentMap() == 1) {
+                drawMap1(g);
+            } else {
+                drawMap2(g);
+            }
             meter.drawMeter(g);
             engine.getEgg().draw(g);
         }
@@ -291,18 +303,63 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
 
     }
     @Override
-    public void mousePressed(MouseEvent e){
-            // ONLY allow new shot if egg is not moving
-            if (engine.getEgg().isMoving()) return;
+    public void mousePressed(MouseEvent e) {
 
-            dragStart = e.getPoint();
-            currentMousePos = e.getPoint();
-            isDragging = true;
+        if (engine.getGameState() == GameEngine.STATE_MENU) {
+
+            if (watchButton.contains(e.getPoint())) {
+                engine.startTutorial();
+            }
+
+            if (skipButton.contains(e.getPoint())) {
+                engine.skipToOpening();
+            }
+        }
+
+        else if (engine.getGameState() == GameEngine.STATE_TUTORIAL) {
+            engine.skipToOpening(); // allow skipping mid-animation
+        }
+
+        // In mousePressed(MouseEvent e):
+        else if (engine.getGameState() == GameEngine.STATE_PLAYING) {
+            if (waitingForMeter) {
+                String zone = meter.lockAndGetZone();
+                double vx = pendingVX;
+                double vy = pendingVY;
+
+                if (zone.equals("yellow")) {
+                    double angle = (Math.random() - 0.5) * 0.4;
+                    double speed = Math.sqrt(vx*vx + vy*vy) * (0.7 + Math.random() * 0.4);
+                    double baseAngle = Math.atan2(vy, vx) + angle;
+                    vx = Math.cos(baseAngle) * speed;
+                    vy = Math.sin(baseAngle) * speed;
+                } else if (zone.equals("red")) {
+                    double angle = (Math.random() - 0.5) * 1.2;
+                    double speed = Math.sqrt(vx*vx + vy*vy) * (0.3 + Math.random() * 0.5);
+                    double baseAngle = Math.atan2(vy, vx) + angle;
+                    vx = Math.cos(baseAngle) * speed;
+                    vy = Math.sin(baseAngle) * speed;
+                }
+
+                engine.processShotDirect(vx, vy);
+                meter.reset();
+                waitingForMeter = false;
+            } else {
+                dragStart = e.getPoint();       // ✅ e exists here
+                currentMousePos = e.getPoint(); // ✅ e exists here
+                isDragging = true;
+            }
+        }
     }
 
     @Override
     public void mouseDragged(MouseEvent e){
         currentMousePos = e.getPoint();
+    }
+
+    private void drawFakeMouse(Graphics g) {
+        g.setColor(Color.BLACK);
+        g.fillOval(fakeMouse.x - 5, fakeMouse.y - 5, 10, 10);
     }
 
     public void render() {
@@ -314,7 +371,17 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
 
         Graphics g = bf.getDrawGraphics();
         try {
-            myPaint(g);
+            // Handle ALL drawing here
+            if (engine.getGameState() == GameEngine.STATE_MENU) {
+                drawMenu(g);
+            }
+            else if (engine.getGameState() == GameEngine.STATE_TUTORIAL) {
+                drawTutorial(g);
+            }
+            else {
+                myPaint(g);
+            }
+
         } finally {
             g.dispose();
         }
@@ -323,27 +390,172 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
         Toolkit.getDefaultToolkit().sync();
     }
 
+    private void drawMenu(Graphics g) {
+        g.setColor(Color.BLACK);
+        g.setFont(new Font("Arial", Font.BOLD, 28));
+        g.drawString("Egg Shot!", 260, 200);
+
+        g.setColor(Color.GRAY);
+        g.fillRect(250, 300, 200, 50);
+        g.fillRect(250, 400, 200, 50);
+
+        g.setColor(Color.WHITE);
+        g.drawString("Watch Tutorial", 255, 335);
+        g.drawString("Skip", 320, 435);
+    }
+
+    private void drawTutorial(Graphics g) {
+
+        Graphics2D g2 = (Graphics2D) g;
+
+        // background
+        g.setColor(new Color(120, 200, 120));
+        g.fillRect(0, 0, getWidth(), getHeight());
+
+        // obstacle block
+        g.setColor(Color.DARK_GRAY);
+        g.fillRect(450, 450, 50, 50);
+
+        // draw nest
+        drawNest(g);
+
+        drawFakeMouse(g);
+
+        drawHealthBar(g);
+
+        // draw egg
+        engine.getEgg().draw(g);
+
+        int t = engine.getTutorialTimer();
+
+// START ON EGG
+        if (t < 60) {
+            fakeMouse.x = 300;
+            fakeMouse.y = 500;
+        }
+
+// WAIT (no movement)
+        else if (t < 120) {
+            fakeMouse.x = 300;
+            fakeMouse.y = 500;
+        }
+
+// DRAG BACK (smooth pull)
+        // FIRST DRAG
+        else if (t < 240) {
+            double progress = (t - 120) / 120.0;
+
+            fakeMouse.x = (int)(300 - 120 * progress);
+            fakeMouse.y = (int)(500 - 120 * progress);
+        }
+
+// HOLD AFTER FIRST SHOT
+        else if (t < 360) {
+            fakeMouse.x = 180;
+            fakeMouse.y = 380;
+        }
+
+// RESET FOR SECOND SHOT
+        else if (t < 420) {
+            fakeMouse.x = 300;
+            fakeMouse.y = 500;
+        }
+
+// SECOND DRAG (BAD AIM)
+        else if (t < 480) {
+            double progress = (t - 420) / 60.0;
+
+            fakeMouse.x = (int)(300 - 100 * progress);
+            fakeMouse.y = (int)(500 + 140 * progress); // slight angle difference
+        }
+
+// HOLD SECOND RELEASE
+        else {
+            fakeMouse.x = 200;
+            fakeMouse.y = 450;
+        }
+        // text instructions
+        g.setColor(Color.BLACK);
+        g.setFont(new Font("Arial", Font.BOLD, 18));
+
+        if (t < 120) {
+            g.drawString("Goal: Get the egg into the nest!", 200, 100);
+        }
+        else if (t < 240 || (t >= 420 && t < 480)) {
+            g.drawString("Click and drag backwards to aim", 180, 100);
+            drawArrow(g2);
+        }
+        else if (t < 300) {
+            g.drawString("Release to shoot!", 260, 100);
+        }
+        else if (t < 360) {
+            g.drawString("Perfect shot!", 280, 100);
+        }
+        else if (t < 420) {
+            g.drawString("But watch out for obstacles...", 200, 100);
+        }
+        else if (t < 480) {
+            g.drawString("Bad aim can cause collisions!", 180, 100);
+        }
+        else {
+            g.drawString("Avoid obstacles to protect your egg!", 150, 100);
+
+            // impact feedback
+            if (t > 500 && t < 540) {
+                g.setColor(new Color(255, 0, 0, 120));
+                g.fillRect(0, 0, getWidth(), getHeight());
+            }
+        }
+    }
+
+    private void drawArrow(Graphics2D g2) {
+
+        int startX = 300;
+        int startY = 500;
+
+        int endX = fakeMouse.x;
+        int endY = fakeMouse.y;
+
+        g2.setColor(Color.RED);
+        g2.setStroke(new BasicStroke(3));
+        g2.drawLine(startX, startY, endX, endY);
+    }
+
+    private void drawHealthBar(Graphics g) {
+        g.setColor(Color.GRAY);
+        g.fillRect(20, 20, 200, 20);
+
+        int t = engine.getTutorialTimer();
+
+        int health = 100;
+
+        if (t > 360) {
+            health = 60; // show damage
+        }
+
+        g.setColor(Color.RED);
+        g.fillRect(20, 20, health * 2, 20);
+    }
+
+
     @Override
     public void mouseReleased(MouseEvent e){
-        // Check whether or not the user is dragging to shoot
         if (isDragging) {
-            // Find the exact point where the user released the mouse after dragging
             Point release = e.getPoint();
 
-            // Set speed equal to the distance where they shot to distance where they released
             double dx = release.x - dragStart.x;
             double dy = release.y - dragStart.y;
 
-            // We need the dx and dy to be negative since we shoot in the opposite direction
-            // This process shot is going to output the right speed for x and y
-            engine.processShot(-dx, -dy, 0.1);
-
-            // Set isDragging to false so we don't have any glitches
+            // Store shot but don't fire yet
+            pendingVX = -dx * 0.1;
+            pendingVY = -dy * 0.1;
             isDragging = false;
-
-            // clear drag so no ghost lines
             dragStart = null;
             currentMousePos = null;
+
+            // Activate the meter — egg fires only after user clicks to lock it
+            meter.activate();
+            waitingForMeter = true;
         }
     }
 

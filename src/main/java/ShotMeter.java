@@ -7,6 +7,10 @@ public class ShotMeter {
     private int barX;
     private int barY;
     private int speed;
+    private boolean isVisible = false;
+    private boolean isLocked = false;
+    private int lockedX = -1;
+
 
     //Constructor for ShotMeter
     public ShotMeter() {
@@ -17,7 +21,7 @@ public class ShotMeter {
     }
 
     public void update() {
-        if (!isMoving) return;
+        if (!isMoving || !isVisible || isLocked) return;
 
         // 15 = speed of movement
         barX += direction * 15;
@@ -45,6 +49,34 @@ public class ShotMeter {
         return speed;
     }
 
+    public void activate() {
+        isVisible = true;
+        isLocked = false;
+        barX = 100;
+        direction = 1;
+    }
+
+    public boolean isVisible() { return isVisible; }
+    public boolean isLocked() { return isLocked; }
+
+    // Returns "green", "yellow", or "red" based on where bar stopped
+    public String lockAndGetZone() {
+        isLocked = true;
+        lockedX = barX;
+        isMoving = false;
+
+        if (lockedX >= 250) return "green";
+        else if (lockedX >= 170) return "yellow";
+        else return "red";
+    }
+
+    public void reset() {
+        isVisible = false;
+        isLocked = false;
+        isMoving = true;
+        barX = 100;
+    }
+
     public void redRect(Graphics g) {
         g.setColor(Color.red);
         g.fillRect(60, 50, 110,50);
@@ -62,19 +94,16 @@ public class ShotMeter {
     }
 
     public void drawMeter(Graphics g){
-        // Draw zones
+        if (!isVisible) return;  // ← must be FIRST
+
         redRect(g);
         yellowRect(g);
         greenRect(g);
 
-        // Draw moving black line
         Graphics2D g2 = (Graphics2D) g;
-
         g2.setColor(Color.black);
-        g2.setStroke(new BasicStroke(6)); // adjust thickness here
-
+        g2.setStroke(new BasicStroke(6));
         g2.drawLine(barX, barY, barX, barY + 50);
-
     }
 
 }
