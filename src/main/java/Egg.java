@@ -148,20 +148,24 @@ public class Egg {
         return health;
     }
 
+    //Depending on what obstacle the egg collided with, different outcomes ensure
     public void whenCollided(){
         if (obstacle.hasCollided(this)){
+            //reverses
             if (obstacle instanceof Wall){
                 // TODO fix this
                 x*=-1;
                 y*=-1;
             }
+            //speeds up
             if(obstacle instanceof Ice){
-                velX*=10;
-                velY*=10;
+                velX+=20;
+                velY+=20;
             }
+            //slows down
             if(obstacle instanceof GrassPatch){
-                velX/=10;
-                velY/=10;
+                velX-=20;
+                velY-=20;
             }
         }
     }

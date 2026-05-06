@@ -33,6 +33,7 @@ class Obstacle {
         return null;
     }
 
+    //Checks to see if the egg has made contact with any part of the obstacle
     public boolean hasCollided(Egg egg) {
         double ex1 = egg.getX();
         double ex2 = egg.getX() + egg.WIDTH;
@@ -41,6 +42,7 @@ class Obstacle {
 
         int wx2 = x + width;
         int wy2 = y + height;
+        //Checks if the coordinates of the egg are colliding with the coordinates of the wall
         if (ex1 < wx2 && ey1 < wy2 && ex2 > x && ey2 > y) {
             return true;
         }
