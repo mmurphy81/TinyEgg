@@ -151,7 +151,7 @@ public class Egg {
     //Depending on what obstacle the egg collided with, different outcomes ensure
     public void whenCollided(){
         if (obstacle.hasCollided(this)){
-            //reverses
+            //If the egg hits the wall, it bounces back to the other direction
             if (obstacle instanceof Wall){
                 // TODO fix this
                 x*=-1;
