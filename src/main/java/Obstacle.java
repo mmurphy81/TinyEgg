@@ -40,10 +40,10 @@ class Obstacle {
         double ey1 = egg.getY();
         double ey2 = egg.getY() + egg.HEIGHT;
 
-        int wx2 = x + width;
-        int wy2 = y + height;
+        int wallx2 = x + width;
+        int wally2 = y + height;
         //Checks if the coordinates of the egg are colliding with the coordinates of the wall
-        if (ex1 < wx2 && ey1 < wy2 && ex2 > x && ey2 > y) {
+        if (ex1 < wallx2 && ey1 < wally2 && ex2 > x && ey2 > y) {
             return true;
         }
         return false;
