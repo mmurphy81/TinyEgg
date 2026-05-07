@@ -24,6 +24,10 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
     public static final int WINDOW_WIDTH = 1000;
     public static final int WINDOW_HEIGHT = 1000;
 
+    private double pendingVX = 0;
+    private double pendingVY = 0;
+    private boolean waitingForMeter = false;
+
     private static final Color GRASS = new Color(34, 139, 34);
     private static final Color ICE = new Color(0, 191, 255);
     private static final Color CORAL = new Color(220, 80, 80);
@@ -60,7 +64,11 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
 
         }
         else if(engine.getGameState() == GameEngine.STATE_PLAYING){
-            this.drawMap2(g);
+            if (engine.getCurrentMap() == 1) {
+                drawMap1(g);
+            } else {
+                drawMap2(g);
+            }
             meter.drawMeter(g);
             engine.getEgg().draw(g);
         }
@@ -296,26 +304,63 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
     }
     @Override
     public void mousePressed(MouseEvent e) {
-
+        // Check which game state we're in to handle mouse clicks appropriately
         if (engine.getGameState() == GameEngine.STATE_MENU) {
 
+            // If the player clicked the "Watch Tutorial" button, start the tutorial
             if (watchButton.contains(e.getPoint())) {
                 engine.startTutorial();
             }
 
+            // If the player clicked the "Skip" button, jump straight to the opening animation
             if (skipButton.contains(e.getPoint())) {
                 engine.skipToOpening();
             }
         }
 
+        // If the player clicks anywhere during the tutorial, skip it and go to the opening
         else if (engine.getGameState() == GameEngine.STATE_TUTORIAL) {
             engine.skipToOpening(); // allow skipping mid-animation
         }
 
+        // In mousePressed(MouseEvent e):
         else if (engine.getGameState() == GameEngine.STATE_PLAYING) {
-            dragStart = e.getPoint();
-            currentMousePos = e.getPoint();
-            isDragging = true;
+            // If the shot direction has already been set and we're waiting for the player
+            // to click to lock the shot meter, handle the meter result
+            if (waitingForMeter) {
+                // Lock the meter and get which zone the bar stopped in (green//yellow/red)
+                String zone = meter.lockAndGetZone();
+                double vx = pendingVX;
+                double vy = pendingVY;
+
+                // If the user clicks onto the yellow
+                // Slightly reduce speed and add a small random angle deviation
+                if (zone.equals("yellow")) {
+                    double angle = (Math.random() - 0.5) * 0.4;
+                    double speed = Math.sqrt(vx*vx + vy*vy) * (0.7 + Math.random() * 0.4);
+                    double baseAngle = Math.atan2(vy, vx) + angle;
+                    vx = Math.cos(baseAngle) * speed;
+                    vy = Math.sin(baseAngle) * speed;
+                }
+                // Red zone: heavily reduce speed and apply a large random angle deviation
+                else if (zone.equals("red")) {
+                    double angle = (Math.random() - 0.5) * 1.2;
+                    double speed = Math.sqrt(vx*vx + vy*vy) * (0.3 + Math.random() * 0.5);
+                    double baseAngle = Math.atan2(vy, vx) + angle;
+                    vx = Math.cos(baseAngle) * speed;
+                    vy = Math.sin(baseAngle) * speed;
+                }
+                // Fire the egg with the final velocity values
+                engine.processShotDirect(vx, vy);
+                // Reset the meter and mark that we're no longer waiting for a meter click
+                meter.reset();
+                waitingForMeter = false;
+            } else {
+                // No shot is pending yet — the player is starting a new drag to aim
+                dragStart = e.getPoint();
+                currentMousePos = e.getPoint();
+                isDragging = true;
+            }
         }
     }
 
@@ -507,25 +552,22 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
 
     @Override
     public void mouseReleased(MouseEvent e){
-        // Check whether or not the user is dragging to shoot
         if (isDragging) {
-            // Find the exact point where the user released the mouse after dragging
             Point release = e.getPoint();
 
-            // Set speed equal to the distance where they shot to distance where they released
             double dx = release.x - dragStart.x;
             double dy = release.y - dragStart.y;
 
-            // We need the dx and dy to be negative since we shoot in the opposite direction
-            // This process shot is going to output the right speed for x and y
-            engine.processShot(-dx, -dy, 0.1);
-
-            // Set isDragging to false so we don't have any glitches
+            // Store shot but don't fire yet
+            pendingVX = -dx * 0.1;
+            pendingVY = -dy * 0.1;
             isDragging = false;
-
-            // clear drag so no ghost lines
             dragStart = null;
             currentMousePos = null;
+
+            // Activate the meter — egg fires only after user clicks to lock it
+            meter.activate();
+            waitingForMeter = true;
         }
     }
 
