@@ -160,6 +160,14 @@ public class Egg {
         return y;
     }
 
+    public double getVelX() {
+        return velX;
+    }
+
+    public double getVelY() {
+        return velY;
+    }
+
     public int getHealth() {
         return health;
     }
