@@ -1,13 +1,19 @@
 import java.awt.*;
 
 public class GrassPatch extends Obstacle {
+    private boolean eggInside = false;
+
     public GrassPatch(int x, int y, int width, int height) {
         super(x, y, width, height);
     }
 
     @Override
     public boolean hasCollided(Egg egg) {
-        return super.hasCollided(egg);
+        if (!super.hasCollided(egg)) {
+            eggInside = false; // reset when egg leaves
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -18,7 +24,11 @@ public class GrassPatch extends Obstacle {
     }
     @Override
     public void respondToCollision(Egg egg) {
-        egg.applyImpulsive(egg.getVelX() -2, egg.getVelY() -2);
+        if (!eggInside) {
+            egg.slowDown(0.9); // only applied once on entry
+            eggInside = true;
+        }
     }
-
 }
+
+
