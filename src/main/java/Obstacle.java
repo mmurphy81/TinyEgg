@@ -1,59 +1,61 @@
 import java.awt.*;
 
-abstract class Obstacle {
+class Obstacle {
     private int x;
     private int y;
     private int width;
     private int height;
 
-    public Rectangle getBounds(){
+    public Obstacle(int x, int y, int width, int height) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public Rectangle getBounds() {
         return null;
     }
 
-    public void onCollision(Egg egg){
+    //Checks to see if the egg has made contact with any part of the obstacle
+    public boolean hasCollided(Egg egg) {
+        double ex1 = egg.getX();
+        double ex2 = egg.getX() + egg.WIDTH;
+        double ey1 = egg.getY();
+        double ey2 = egg.getY() + egg.HEIGHT;
+
+        int wallx2 = x + width;
+        int wally2 = y + height;
+        //Checks if the coordinates of the egg are colliding with the coordinates of the wall
+        if (ex1 < wallx2 && ey1 < wally2 && ex2 > x && ey2 > y) {
+            return true;
+        }
+        return false;
+    }
+
+    //Only gets called if you know the egg has collided
+    public boolean hitTopOrBottom(Egg egg){
+        return false;
+    }
+
+    public void draw(Graphics g) {
 
     }
 
-    public void draw(Graphics g){
-
-    }
-
-    public class SwingDoor extends Obstacle{
-
-        @Override
-        public void onCollision(Egg egg) {
-            super.onCollision(egg);
-        }
-        @Override
-        public void draw(Graphics g) {
-            super.draw(g);
-        }
-
-        public void update(){
-
-        }
-    }
-
-    public class GrassPatch extends Obstacle{
-        @Override
-        public void onCollision(Egg egg) {
-            super.onCollision(egg);
-        }
-        @Override
-        public void draw(Graphics g) {
-            super.draw(g);
-        }
-
-    }
-    public class Wall extends Obstacle{
-        @Override
-        public void onCollision(Egg egg) {
-            super.onCollision(egg);
-        }
-
-        @Override
-        public void draw(Graphics g) {
-            super.draw(g);
-        }
-    }
 }

@@ -1,6 +1,7 @@
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import javax.swing.Timer;
 
 // Implement actionlistener to create animatinos
@@ -13,6 +14,7 @@ public class GameEngine {
     private double FRICTION;
     private int score;
     private ShotMeter meter;
+    private ArrayList<Obstacle> obstacles;
     private int tutorialTimer;
     private int currentMap = 1;
 
@@ -25,11 +27,17 @@ public class GameEngine {
 
     // Constructor that gives access to everything
     public GameEngine(){
+        gameState = STATE_PLAYING;
         gameState = STATE_MENU;
         tutorialTimer = 0;
         activeEgg = new Egg(600,345);
         meter = new ShotMeter();
+        obstacles = new ArrayList<>();
         window = new GameDisplay(this, meter);
+    }
+
+    public ArrayList<Obstacle> getObstacles() {
+        return obstacles;
     }
 
     // Updates the gamestate depending on egg
@@ -219,6 +227,59 @@ public class GameEngine {
         return tutorialTimer;
     }
 
+    public void addLevel1Obstacles(){
+        obstacles.clear();
+        addLevel1Ice();
+        addLevel1Walls();
+        addLevel1GrassP();
+    }
+    public void addLevel2Obstacles(){
+        obstacles.clear();
+        addLevel2Ice();
+        addLevel2Walls();
+        addLevel2GrassP();
+    }
+    public void addLevel1Walls(){
+        obstacles.add(new Wall(519, 79, 38, 316));
+        obstacles.add(new Wall(245, 632, 38, 290));
+
+    }
+
+    public void addLevel2Walls(){
+        obstacles.clear();
+
+        //Right side walls
+        obstacles.add(new Wall(200, 0, 25, 320));
+        obstacles.add(new Wall(250, 500, 25, 300));
+        obstacles.add((new Wall(475, 0, 25, 300)));
+
+        //Left side walls
+        obstacles.add((new Wall(700, 0, 25, 400)));
+        obstacles.add((new Wall(475, 470, 25, 300)));
+        obstacles.add(new Wall(900, 0, 25, 600));
+    }
+
+    public void addLevel1Ice(){
+        obstacles.add((new Ice(113, 105, 245, 197)));
+        obstacles.add((new Ice(396, 487, 283, 237)));
+    }
+    public void addLevel2Ice(){
+        obstacles.add((new Ice(0, 200, 200, 120)));
+        obstacles.add((new Ice(275, 600, 200, 120)));
+        obstacles.add((new Ice(500, 260, 200, 120)));
+    }
+
+    public void addLevel1GrassP(){
+        obstacles.add(new GrassPatch(620, 190, 180, 100));
+        obstacles.add(new GrassPatch(620, 190, 180, 100));
+        obstacles.add(new GrassPatch(680, 710, 180, 100));
+    }
+
+    public void addLevel2GrassP(){
+        obstacles.add(new GrassPatch(390, 430, 125, 100));
+        obstacles.add(new GrassPatch(720,530, 128, 100));
+        obstacles.add(new GrassPatch(560, 720, 140, 100));
+    }
 
     public static void main(String[] args) {
         GameEngine g = new GameEngine();

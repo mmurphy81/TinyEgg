@@ -24,16 +24,26 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
     public static final int WINDOW_WIDTH = 1000;
     public static final int WINDOW_HEIGHT = 1000;
 
+    //Magic numbers for all of our colors so the colors are easier to understand
+    public  static  final Color GRASS_2 = new Color(85, 155, 70);
+    public static final Color GRASS_3 = new Color(70, 140, 60);
+    public static final Color GRASS_H = new Color(60, 120, 55);
+    public static final Color TREE_LEAF = new Color(34, 139, 34);
+    public static Color TREE_LEAF2 = new Color(30, 120, 30);
+    public static final Color GRASS = new Color(34, 139, 34);
+    public static final Color DARK_GREEN = new Color(0, 100, 0);
+    public static final Color TOP_SKY = new Color(135, 206, 235);
+    public static final Color MID_SKY = new Color(176, 226, 255);
+    public static final Color HORIZON_SKY = new Color(200, 240, 255);
+    public static final Color ICE = new Color(0, 191, 255);
+    public static final Color CORAL = new Color(220, 80, 80);
+    public static final Color LIGHT_ORANGE = new Color(205, 133, 63);
+    public static final Color BROWN = new Color(122, 75, 29);
+    public static final Color TREE_BASE = new Color(101, 67, 33);
     private double pendingVX = 0;
     private double pendingVY = 0;
     private boolean waitingForMeter = false;
 
-    private static final Color GRASS = new Color(34, 139, 34);
-    private static final Color ICE = new Color(0, 191, 255);
-    private static final Color CORAL = new Color(220, 80, 80);
-    private static final Color LIGHT_ORANGE = new Color(205, 133, 63);
-    private static final Color BROWN = new Color(122, 75, 29);
-    private static final Color DARK_GREEN = new Color(0, 100, 0);
 
     Rectangle watchButton = new Rectangle(250, 300, 200, 50);
     Rectangle skipButton = new Rectangle(250, 400, 200, 50);
@@ -52,6 +62,23 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
         this.setVisible(true);
         createBufferStrategy(2);
 
+    // Bufferstrategy in order for no glitches
+    public void paint(Graphics g){
+        BufferStrategy bf = getBufferStrategy();
+        if (bf == null) {
+            createBufferStrategy(2);
+            return;
+        }
+        Graphics g2 = null;
+        try {
+            g2 = bf.getDrawGraphics();
+            myPaint(g2);
+        }
+        finally {
+            g2.dispose();
+        }
+        bf.show();
+        Toolkit.getDefaultToolkit().sync();
     }
 
 
@@ -90,7 +117,7 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
 
     // Draw the tree branch
     private void drawBranch(Graphics g) {
-        g.setColor(new Color(101,67,33));
+        g.setColor(BROWN);
         g.fillRect(540, 400, 200, 20);
     }
 
@@ -108,34 +135,34 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
     private void drawBackground(Graphics g){
 
         // sky gradient effect (fake gradient using bands)
-        g.setColor(new Color(135, 206, 235)); // top sky
+        g.setColor(TOP_SKY); // top sky
         g.fillRect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-        g.setColor(new Color(176, 226, 255)); // softer mid sky
+        g.setColor(MID_SKY); // softer mid sky
         g.fillRect(0, 0, WINDOW_WIDTH, 500);
 
-        g.setColor(new Color(200, 240, 255)); // near horizon glow
+        g.setColor(HORIZON_SKY); // near horizon glow
         g.fillRect(0, 0, WINDOW_WIDTH, 250);
 
         // ground
-        g.setColor(new Color(85, 155, 70));
+        g.setColor(GRASS_2);
         g.fillRect(0, 650, WINDOW_WIDTH, 350);
 
         // subtle ground variation (patchy grass feel)
-        g.setColor(new Color(70, 140, 60));
+        g.setColor(GRASS_3);
         for(int i = 0; i < WINDOW_WIDTH; i += 40){
             g.fillRect(i, 650 + (i % 3) * 3, 20, 100);
         }
 
         // distant horizon line
-        g.setColor(new Color(60, 120, 55));
+        g.setColor(GRASS_H);
         g.drawLine(0, 650, WINDOW_WIDTH, 650);
     }
 
     private void drawTree(Graphics g){
 
         // trunk
-        g.setColor(new Color(101, 67, 33));
+        g.setColor(TREE_BASE);
         g.fillRect(450, 250, 100, 450);
 
         // trunk outline (adds depth)
@@ -143,11 +170,11 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
         g.drawRect(450, 250, 100, 450);
 
         // foliage base
-        g.setColor(new Color(34, 139, 34));
+        g.setColor(TREE_LEAF);
         g.fillOval(350, 80, 300, 250);
 
         // extra foliage blobs for shape variation
-        g.setColor(new Color(30, 120, 30));
+        g.setColor(TREE_LEAF2);
         g.fillOval(300, 150, 200, 180);
         g.fillOval(450, 120, 220, 200);
 
@@ -159,11 +186,11 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
     private void drawNest(Graphics g){
 
         // nest base
-        g.setColor(new Color(139, 69, 19));
+        g.setColor(BROWN);
         g.fillOval(560, 350, 120, 50);
 
         // inner shading
-        g.setColor(new Color(160, 82, 45));
+        g.setColor(LIGHT_ORANGE);
         g.fillOval(570, 350, 100, 40);
 
         // outline
@@ -179,15 +206,13 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
         g.setColor(GRASS);
         g.fillRect(0, 0, getWidth(), getHeight());
 
-        // Drawing the ice
-        g.setColor(ICE);
-        g.fillRect(113, 105, 245, 197);
-        g.fillRect(396, 487, 283, 237);
+        // TODO MM move to backend after Ryans code
+        engine.addLevel1Obstacles();
 
-        // Drawing the walls
-        g.setColor(CORAL);
-        g.fillRect(519, 79, 38, 316);
-        g.fillRect(245, 632, 38, 290);
+        //Drawing all the obstacles
+        for (int i =0; i<engine.getObstacles().size(); i++){
+            engine.getObstacles().get(i).draw(g);
+        }
 
         // Bird's nest (top right)
         g.setColor(LIGHT_ORANGE);
@@ -196,14 +221,16 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
         g.setColor(BROWN);
         g.fillOval(750, 80, 160, 50);
 
-        // Drawing the grass
-        g.setColor(DARK_GREEN);
 
+
+        // Drawing the grass details that the user sees
+        g.setColor(DARK_GREEN);
         // Top-left grass patch
         //Initiates the coordinates for each point of the grass and moves them to the next coordinates
         int[] x1 = {90, 120, 150, 180, 210, 240, 270};
         int[] y1 = {370, 330, 370, 330, 370, 330, 370};
         g.drawPolyline(x1, y1, x1.length);
+
 
         // Top-right grass patch
         int[] x2 = {620, 650, 680, 710, 740, 770, 800};
@@ -221,22 +248,12 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
         g.setColor(GRASS);
         g.fillRect(0, 0, getWidth(), getHeight());
 
-        // Right side walls
-        g.setColor(CORAL);
-        g.fillRect(200, 0, 25, 320);
-        g.fillRect(250, 500, 25, 300);
-        g.fillRect(475, 0, 25, 300);
+        //Draws the walls
+        engine.addLevel2Obstacles();
+        for (int i =0; i<engine.getObstacles().size(); i++){
+            engine.getObstacles().get(i).draw(g);
+        }
 
-        //Left side walls
-        g.fillRect(700, 0, 25, 400);
-        g.fillRect(475, 470, 25, 300);
-        g.fillRect(900, 0, 25, 600);
-
-        // Ice
-        g.setColor(ICE);
-        g.fillRect(0, 200, 200, 120);
-        g.fillRect(275, 600, 200, 120);
-        g.fillRect(500, 260, 200, 120);
 
         // Nest
         g.setColor(LIGHT_ORANGE);
