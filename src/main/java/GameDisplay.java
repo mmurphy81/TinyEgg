@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferStrategy;
+import java.awt.Graphics;
 
 
 public class GameDisplay extends JFrame implements MouseListener, MouseMotionListener{
@@ -48,7 +49,7 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
     Rectangle watchButton = new Rectangle(250, 300, 200, 50);
     Rectangle skipButton = new Rectangle(250, 400, 200, 50);
 
-    public GameDisplay(GameEngine engine, ShotMeter meter){
+    public GameDisplay(GameEngine engine, ShotMeter meter) {
         // Access to backend
         this.engine = engine;
         this.meter = meter;
@@ -61,6 +62,7 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setVisible(true);
         createBufferStrategy(2);
+    }
 
     // Bufferstrategy in order for no glitches
     public void paint(Graphics g){
