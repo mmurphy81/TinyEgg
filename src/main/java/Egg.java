@@ -194,5 +194,9 @@ public class Egg {
             }
         }
     }
+    public void slowDown(double factor) {
+        velX *= factor;
+        velY *= factor;
+    }
 
 }
