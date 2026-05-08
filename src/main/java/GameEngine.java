@@ -17,6 +17,7 @@ public class GameEngine {
     private ArrayList<Obstacle> obstacles;
     private int tutorialTimer;
     private int currentMap = 1;
+    private int endingTimer;
 
 
     // Constants for state
@@ -24,6 +25,7 @@ public class GameEngine {
     public static final int STATE_TUTORIAL = 1;
     public static final int STATE_OPENING = 2;
     public static final int STATE_PLAYING = 3;
+    public static final int STATE_ENDING = 4;
 
     // Constructor that gives access to everything
     public GameEngine(){
@@ -38,6 +40,10 @@ public class GameEngine {
 
     public ArrayList<Obstacle> getObstacles() {
         return obstacles;
+    }
+
+    public int getEndingTimer() {
+        return endingTimer;
     }
 
     // Updates the gamestate depending on egg
@@ -65,6 +71,10 @@ public class GameEngine {
                 activeEgg.move();
                 checkCollision();
                 checkNestEntry();
+            }
+
+            else if (gameState == STATE_ENDING){
+                endingTimer++;
             }
         }
     public void processShotDirect(double vx, double vy) {
@@ -200,8 +210,15 @@ public class GameEngine {
         Rectangle eggBounds = new Rectangle((int)activeEgg.getX(), (int)activeEgg.getY(), 40, 55);
 
         if (nestBounds.intersects(eggBounds) && !activeEgg.isMoving()) {
-            currentMap = currentMap == 1 ? 2 : 1; // toggle maps
-            activeEgg = new Egg(300, 645); // reset egg to ground level
+            //Makes it so that if the map is 2 and the egg is in the next ti goes to the end screen
+            if (currentMap == 2){
+                gameState = STATE_ENDING;
+            }
+            else {
+                currentMap = 2;
+                activeEgg = new Egg(300, 645); // reset egg to ground level
+                addLevel2Obstacles();
+            }
         }
     }
 
@@ -251,7 +268,6 @@ public class GameEngine {
     }
 
     public void addLevel2Walls(){
-        obstacles.clear();
 
         //Right side walls
         obstacles.add(new Wall(200, 0, 25, 320));
@@ -275,7 +291,7 @@ public class GameEngine {
     }
 
     public void addLevel1GrassP(){
-        obstacles.add(new GrassPatch(620, 190, 180, 100));
+        obstacles.add(new GrassPatch(90, 370, 180, 100));
         obstacles.add(new GrassPatch(620, 190, 180, 100));
         obstacles.add(new GrassPatch(680, 710, 180, 100));
     }

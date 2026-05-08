@@ -41,6 +41,8 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
     public static final Color LIGHT_ORANGE = new Color(205, 133, 63);
     public static final Color BROWN = new Color(122, 75, 29);
     public static final Color TREE_BASE = new Color(101, 67, 33);
+    public static final Color LIGHT_PURPLE = new Color(210, 180, 255);
+
     private double pendingVX = 0;
     private double pendingVY = 0;
     private boolean waitingForMeter = false;
@@ -409,6 +411,9 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
             else if (engine.getGameState() == GameEngine.STATE_TUTORIAL) {
                 drawTutorial(g);
             }
+            else if (engine.getGameState() == GameEngine.STATE_ENDING) {
+                drawEndScreen(g);
+            }
             else {
                 myPaint(g);
             }
@@ -589,6 +594,86 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
             waitingForMeter = true;
         }
     }
+
+    private void drawEndScreen(Graphics g){
+        int time = engine.getEndingTimer();
+
+        //Sets background to light purple
+        g.setColor(LIGHT_PURPLE);
+        g.fillRect(0,0, getWidth(), getHeight());
+
+        int midX = getWidth()/2;
+        int midY = getHeight()/2;
+
+        // For the first frames, the egg is intact
+        if (time < 60) {
+            drawEndEgg(g, midX, midY, false, false);
+        }
+
+        // Cracks start to show up in this frame
+        else if (time < 120) {
+            drawEndEgg(g, midX, midY, true, false);
+        }
+
+        //Egg splits in this phase
+        else {
+            drawEndEgg(g, midX, midY, true, true);
+
+            // "You Win!" text fades in
+            g.setColor(DARK_GREEN);
+            g.setFont(new Font("Arial", Font.BOLD, 64));
+            g.drawString("You Win!", midX - 150, midY - 120);
+        }
+    }
+
+    private void drawEndEgg(Graphics g, int midX, int midY, boolean cracked, boolean open){
+        if (!open) {
+            // Draws the whole intact egg at the start
+            g.setColor(Color.WHITE);
+            g.fillOval(midX - 20, midY - 28, 40, 55);
+            //Draws the outline of the egg
+            g.setColor(Color.BLACK);
+            g.drawOval(midX - 20, midY - 28, 40, 55);
+
+            if (cracked) {
+                // Draw cracks spreading across egg
+                g.setColor(Color.BLACK);
+                g.drawLine(midX - 2, midY - 28, midX - 8, midY);
+                g.drawLine(midX + 2, midY - 24, midX + 8, midY + 5);
+                g.drawLine(midX - 5, midY - 10, midX + 5, midY);
+            }
+        } else {
+            // Left half of egg splits away from the rest of the egg
+            g.setColor(Color.WHITE);
+            g.fillArc(midX - 30, midY - 28, 40, 55, 90, 180);
+            g.setColor(Color.BLACK);
+            g.drawArc(midX - 30, midY - 28, 40, 55, 90, 180);
+
+            // Right half splits away
+            g.setColor(Color.WHITE);
+            g.fillArc(midX + 10, midY - 28, 40, 55, 270, 180);
+            g.setColor(Color.BLACK);
+            g.drawArc(midX + 10, midY - 28, 40, 55, 270, 180);
+
+            // Little chick peek in the middle of the egg
+            g.setColor(new Color(255, 220, 50)); // yellow
+            g.fillOval(midX - 12, midY - 15, 24, 24); // chick head
+            g.setColor(Color.BLACK);
+            g.drawOval(midX - 12, midY - 15, 24, 24);
+
+            // Eyes for chick
+            g.fillOval(midX - 6, midY - 10, 4, 4);
+            g.fillOval(midX + 2, midY - 10, 4, 4);
+
+            // Beak for chick
+            g.setColor(new Color(255, 160, 0));
+            int[] bx = {midX - 2, midX + 2, midX};
+            int[] by = {midY - 5, midY - 5, midY - 1};
+            //Creates polygon for the beak
+            g.fillPolygon(bx, by, 3);
+        }
+    }
+
 
 
     @Override

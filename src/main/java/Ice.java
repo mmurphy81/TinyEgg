@@ -18,6 +18,6 @@ public class Ice extends Obstacle {
     }
     @Override
     public void respondToCollision(Egg egg) {
-        egg.applyImpulsive(egg.getVelX() + 2, egg.getVelY() * 2);
+        egg.applyImpulsive(egg.getVelX() + 1, egg.getVelY() + 1);
     }
 }
