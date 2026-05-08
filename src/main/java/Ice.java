@@ -16,4 +16,8 @@ public class Ice extends Obstacle {
         g.setColor(GameDisplay.ICE);
         g.fillRect(getX(), getY(), getWidth(), getHeight());
     }
+    @Override
+    public void respondToCollision(Egg egg) {
+        egg.applyImpulsive(egg.getVelX() + 2, egg.getVelY() * 2);
+    }
 }

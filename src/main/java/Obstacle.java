@@ -1,6 +1,6 @@
 import java.awt.*;
 
-class Obstacle {
+public abstract class Obstacle {
     private int x;
     private int y;
     private int width;
@@ -48,6 +48,7 @@ class Obstacle {
         }
         return false;
     }
+    public abstract void respondToCollision(Egg egg);
 
     //Only gets called if you know the egg has collided
     public boolean hitTopOrBottom(Egg egg){

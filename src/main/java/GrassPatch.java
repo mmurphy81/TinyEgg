@@ -16,5 +16,9 @@ public class GrassPatch extends Obstacle {
         g.setColor(GameDisplay.GRASS);
         g.fillRect(getX(), getY(), getWidth(), getHeight());
     }
+    @Override
+    public void respondToCollision(Egg egg) {
+        egg.applyImpulsive(egg.getVelX() -2, egg.getVelY() -2);
+    }
 
 }

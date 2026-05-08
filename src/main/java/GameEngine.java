@@ -63,6 +63,7 @@ public class GameEngine {
             else if (gameState == STATE_PLAYING) {
                 meter.update();
                 activeEgg.move();
+                checkCollision();
                 checkNestEntry();
             }
         }
@@ -182,7 +183,11 @@ public class GameEngine {
     }
 
     public void checkCollision(){
-
+        for (Obstacle obs : obstacles) {
+            if (obs.hasCollided(activeEgg)) {
+                obs.respondToCollision(activeEgg);
+            }
+        }
     }
     public void checkNestEntry(){
         Rectangle nestBounds;
