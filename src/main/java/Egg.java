@@ -12,6 +12,7 @@ public class Egg {
     private boolean isFalling;
     private int state;
     private Obstacle obstacle;
+    private static final double FRICTION = 0.98;
 
 
     // Constants for the dimensinos of the egg and of the ground and gravity
@@ -108,6 +109,10 @@ public class Egg {
         }
     }
 
+    public boolean isMoving() {
+        return Math.abs(velX) > 0.1 || Math.abs(velY) > 0.1;
+    }
+
     public void drawCrack(Graphics g, int x, int y){
         // Draws the crack on the egg
         g.setColor(Color.BLACK);
@@ -121,15 +126,27 @@ public class Egg {
     }
 
     public void move(){
+        x += velX;
+        y += velY;
+
+        // apply friction
+        velX *= FRICTION;
+        velY *= FRICTION;
+
+        // stop tiny movement
+        if (Math.abs(velX) < 0.05) velX = 0;
+        if (Math.abs(velY) < 0.05) velY = 0;
+    }
+
+
+    public void reduceHealth(int amount){
 
     }
 
     public void applyImpulsive(double vx, double vy){
-
-    }
-
-    public void reduceHealth(int amount){
-
+        // Takes in the speed of the shot and sets it into the velocity of the x and y for the egg
+        this.velX = vx;
+        this.velY = vy;
     }
 
     public boolean isCracked(){
@@ -142,6 +159,14 @@ public class Egg {
 
     public double getY() {
         return y;
+    }
+
+    public double getVelX() {
+        return velX;
+    }
+
+    public double getVelY() {
+        return velY;
     }
 
     public int getHealth() {
