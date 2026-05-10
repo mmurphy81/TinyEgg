@@ -4,9 +4,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import javax.swing.Timer;
 
-// Implement actionlistener to create animatinos
 public class GameEngine {
-    // Instance variables
     private GameDisplay window;
     private Egg activeEgg;
     private Level currentLevel;
@@ -18,16 +16,48 @@ public class GameEngine {
     private int tutorialTimer;
     private int currentMap = 1;
 
+    // Tunnel cutscene between Level 3 part 1 and Level 3 part 2.
+    private int tunnelTimer = 0;
+    private static final int TUNNEL_DURATION = 150;
 
-    // Constants for state
+    // Vibrating barrier in front of the gate on Map 3.
+    private double barrierY = 450;
+    private double barrierVelY = 3;
+    private static final double BARRIER_MIN_Y = 380;
+    private static final double BARRIER_MAX_Y = 560;
+    public static final int BARRIER_X = 875;
+    public static final int BARRIER_W = 30;
+    public static final int BARRIER_H = 110;
+    // Gate position: x > GATE_X with y in [GATE_Y_TOP, GATE_Y_BOT] = tunnel.
+    public static final int GATE_X = 950;
+    public static final int GATE_Y_TOP = 410;
+    public static final int GATE_Y_BOT = 590;
+
     public static final int STATE_MENU = 0;
     public static final int STATE_TUTORIAL = 1;
     public static final int STATE_OPENING = 2;
     public static final int STATE_PLAYING = 3;
+    public static final int STATE_TUNNEL = 4;
 
-    // Constructor that gives access to everything
+    // Map number → level number. Extend this if you add more levels.
+    public int getLevelNumber() {
+        if (currentMap == 1) return 1;
+        if (currentMap == 2) return 2;
+        return 3; // currentMap 3 and 4 are both Level 3
+    }
+
+    public String getDifficulty() {
+        switch (getLevelNumber()) {
+            case 1: return "Easy";
+            case 2: return "Medium";
+            case 3: return "Hard";
+            default: return "?";
+        }
+    }
+
+    public double getBarrierY() { return barrierY; }
+
     public GameEngine(){
-        gameState = STATE_PLAYING;
         gameState = STATE_MENU;
         tutorialTimer = 0;
         activeEgg = new Egg(600,345);
@@ -36,151 +66,134 @@ public class GameEngine {
         window = new GameDisplay(this, meter);
     }
 
-    public ArrayList<Obstacle> getObstacles() {
-        return obstacles;
-    }
+    public ArrayList<Obstacle> getObstacles() { return obstacles; }
 
-    // Updates the gamestate depending on egg
     public void update() {
-
-            if (gameState == STATE_MENU) {
-                // do nothing, just wait for input
-            }
-
-            else if (gameState == STATE_TUTORIAL) {
-                tutorialTimer++;
-                runTutorial();
-            }
-
-            else if (gameState == STATE_OPENING) {
-                activeEgg.updateOpening();
-
-                if (activeEgg.getState() == Egg.STATE_LANDED) {
-                    gameState = STATE_PLAYING;
-                }
-            }
-
-            else if (gameState == STATE_PLAYING) {
-                meter.update();
-                activeEgg.move();
-                checkCollision();
-                checkNestEntry();
+        if (gameState == STATE_MENU) {
+        }
+        else if (gameState == STATE_TUTORIAL) {
+            tutorialTimer++;
+            runTutorial();
+        }
+        else if (gameState == STATE_OPENING) {
+            activeEgg.updateOpening();
+            if (activeEgg.getState() == Egg.STATE_LANDED) {
+                gameState = STATE_PLAYING;
             }
         }
+        else if (gameState == STATE_PLAYING) {
+            meter.update();
+            activeEgg.move();
+            checkCollision();
+            // Map 3 has its own moving barrier in front of the tunnel gate.
+            if (currentMap == 3) {
+                updateBarrier();
+                checkBarrierCollision();
+            }
+            checkNestEntry();
+        }
+        else if (gameState == STATE_TUNNEL) {
+            tunnelTimer++;
+            if (tunnelTimer >= TUNNEL_DURATION) {
+                currentMap = 4;
+                activeEgg = new Egg(120, 850);
+                addLevel3bObstacles();
+                gameState = STATE_PLAYING;
+            }
+        }
+    }
+
+    // Oscillate the barrier between BARRIER_MIN_Y and BARRIER_MAX_Y.
+    private void updateBarrier() {
+        barrierY += barrierVelY;
+        if (barrierY < BARRIER_MIN_Y) {
+            barrierY = BARRIER_MIN_Y;
+            barrierVelY = -barrierVelY;
+        }
+        if (barrierY > BARRIER_MAX_Y) {
+            barrierY = BARRIER_MAX_Y;
+            barrierVelY = -barrierVelY;
+        }
+    }
+
+    // Egg vs moving barrier — barrier acts like a vertical wall.
+    private void checkBarrierCollision() {
+        double ex = activeEgg.getX();
+        double ey = activeEgg.getY();
+        int bx = BARRIER_X, by = (int) barrierY, bw = BARRIER_W, bh = BARRIER_H;
+        boolean overlapping = ex + Egg.WIDTH > bx && ex < bx + bw
+                && ey + Egg.HEIGHT > by && ey < by + bh;
+        if (!overlapping) return;
+        double vx = activeEgg.getVelX();
+        double vy = activeEgg.getVelY();
+        double overlapL = (ex + Egg.WIDTH) - bx;
+        double overlapR = (bx + bw) - ex;
+        double newVX = vx;
+        if (overlapL < overlapR && vx > 0) newVX = -vx * 0.6;
+        else if (overlapL >= overlapR && vx < 0) newVX = -vx * 0.6;
+        activeEgg.applyImpulsive(newVX, vy * 0.95);
+    }
+
     public void processShotDirect(double vx, double vy) {
-        // Passes the pre-calculated velocity (already adjusted by the shot meter zone
-        // in GameDisplay) directly to the egg with no additional scaling or modification,
-        // immediately setting it in motion at the given speed and direction
         activeEgg.applyImpulsive(vx, vy);
     }
 
     private void runTutorial() {
-
-        // 0–120 → Explain goal
-        if (tutorialTimer < 120) {
-            // just visuals
-        }
-
-        // 120–240 → show pulling back
-        else if (tutorialTimer < 240) {
-            // handled visually
-        }
-
-        // 240 → FIRE PERFECT SHOT
+        if (tutorialTimer < 120) {}
+        else if (tutorialTimer < 240) {}
         else if (tutorialTimer == 240) {
-
-            double targetX = 760; // nest position
+            double targetX = 760;
             double targetY = 660;
-
             double dx = targetX - activeEgg.getX();
             double dy = targetY - activeEgg.getY();
-
             double length = Math.sqrt(dx * dx + dy * dy);
-
             dx /= length;
             dy /= length;
-
-            // Controlled power so it lands nicely
             activeEgg.applyImpulsive(dx * 10, dy * 10);
         }
-
-        // 240–360 → let it travel
         else if (tutorialTimer < 360) {
             activeEgg.move();
         }
-
-        // 360 → RESET for bad example
         else if (tutorialTimer == 360) {
             activeEgg = new Egg(300, 500);
         }
-
-        // 360–420 → explain obstacles
-        else if (tutorialTimer < 420) {
-            // pause for text
-        }
-
-        // 420–480 → drag again (bad angle)
-        else if (tutorialTimer < 480) {
-            // fake mouse handles this
-        }
-
-        // 480 → BAD SHOT INTO WALL
+        else if (tutorialTimer < 420) {}
+        else if (tutorialTimer < 480) {}
         else if (tutorialTimer == 480) {
-            activeEgg.applyImpulsive(6, -4); // angled into obstacle
+            activeEgg.applyImpulsive(6, -4);
         }
-
-        // 480–600 → movement + collision
         else if (tutorialTimer < 600) {
             activeEgg.move();
-
             double ex = activeEgg.getX();
             double ey = activeEgg.getY();
-
-            // collision with your block at (450,450)
             if (ex + 40 > 450 && ex < 500 && ey + 55 > 450 && ey < 500) {
-                activeEgg.applyImpulsive(-5, -6); // bounce back
-                tutorialTimer = 560; // prevent spam bouncing
+                activeEgg.applyImpulsive(-5, -6);
+                tutorialTimer = 560;
             }
         }
-
-        // END
-        // 600–780 → PAUSE AFTER SECOND SHOT
-        else if (tutorialTimer < 780) {
-            // do nothing, just let player see result
-        }
-
-// AFTER PAUSE → GO TO OPENING
+        else if (tutorialTimer < 780) {}
         else {
             activeEgg = new Egg(600, 350);
             gameState = STATE_OPENING;
         }
     }
 
-    public Egg getEgg() {
-        return activeEgg;
-    }
+    public Egg getEgg() { return activeEgg; }
 
     public void processShot(double deltaX, double deltaY, double multiplier){
-        // Multiplies the speed of velocity by the multiplier
         double vx = deltaX * multiplier;
         double vy = deltaY * multiplier;
-
-        // Sets this new speed equal to the speed of the x and y speed of the egg
         activeEgg.applyImpulsive(vx, vy);
     }
 
-    public int getGameState() {
-        return gameState;
-    }
+    public int getGameState() { return gameState; }
 
     public void startTutorial() {
         tutorialTimer = 0;
         gameState = STATE_TUTORIAL;
     }
 
-    public void skipToOpening() {
-        gameState = STATE_OPENING;
-    }
+    public void skipToOpening() { gameState = STATE_OPENING; }
 
     public void checkCollision(){
         for (Obstacle obs : obstacles) {
@@ -189,48 +202,86 @@ public class GameEngine {
             }
         }
     }
+
     public void checkNestEntry(){
+        // Map 3 uses a gate, not a nest. Cross GATE_X within y window → tunnel.
+        if (currentMap == 3) {
+            double ex = activeEgg.getX();
+            double ey = activeEgg.getY();
+            if (ex >= GATE_X
+                    && ey >= GATE_Y_TOP && ey + Egg.HEIGHT <= GATE_Y_BOT) {
+                tunnelTimer = 0;
+                gameState = STATE_TUNNEL;
+            }
+            return;
+        }
         Rectangle nestBounds;
         if (currentMap == 1) {
-            nestBounds = new Rectangle(736, 66, 200, 100); // map1 nest
-        } else {
-            nestBounds = new Rectangle(750, 650, 200, 100); // map2 nest
+            nestBounds = new Rectangle(736, 66, 200, 100);
+        } else if (currentMap == 2) {
+            nestBounds = new Rectangle(750, 650, 200, 100);
+        } else { // currentMap == 4
+            nestBounds = new Rectangle(820, 100, 160, 80);
         }
-
         Rectangle eggBounds = new Rectangle((int)activeEgg.getX(), (int)activeEgg.getY(), 40, 55);
-
         if (nestBounds.intersects(eggBounds) && !activeEgg.isMoving()) {
-            currentMap = currentMap == 1 ? 2 : 1; // toggle maps
-            activeEgg = new Egg(300, 645); // reset egg to ground level
+            if (currentMap == 1) {
+                currentMap = 2;
+                activeEgg = new Egg(300, 645);
+            } else if (currentMap == 2) {
+                // Map 2 cleared — advance to Map 3 (Level 3 part 1).
+                currentMap = 3;
+                activeEgg = new Egg(120, 850);
+                addLevel3aObstacles();
+            }
+            // currentMap == 4: player finished. Scoreboard hooks in here.
         }
     }
 
-
-    // Add getter:
-    public int getCurrentMap() {
-        return currentMap;
+    // Map 3 (Level 3 part 1, pre-tunnel, tropical).
+    public void addLevel3aObstacles() {
+        obstacles.clear();
+        obstacles.add(new Wall(940,  40,  20, GATE_Y_TOP - 40));
+        obstacles.add(new Wall(940, GATE_Y_BOT, 20, 960 - GATE_Y_BOT));
+        obstacles.add(new Wall(250, 200, 25, 350));
+        obstacles.add(new Wall(500, 100, 25, 300));
+        obstacles.add(new Wall(500, 550, 25, 300));
+        obstacles.add(new Wall(700, 300, 25, 350));
+        obstacles.add(new Ice(280, 420, 200, 80));
+        obstacles.add(new GrassPatch(770, 420, 100, 60));
+        obstacles.add(new GrassPatch(770, 540, 100, 60));
     }
 
-    public String getFinalResult(){
-        return null;
+    // Map 4 (Level 3 part 2, post-tunnel, tropical).
+    public void addLevel3bObstacles() {
+        obstacles.clear();
+        obstacles.add(new Wall(300, 600,  25, 200));
+        obstacles.add(new Wall(600, 300,  25, 200));
+        obstacles.add(new Wall(450, 100, 300,  25));
+        obstacles.add(new Wall(100, 400, 200,  25));
+        obstacles.add(new Wall(750, 600,  25, 250));
+        obstacles.add(new Ice( 50, 100, 250,  80));
+        obstacles.add(new Ice(350, 350, 200, 100));
+        obstacles.add(new GrassPatch(700, 200, 110,  70));
     }
 
-    // Timer for animation
+    public void addLevel3Obstacles() { addLevel3bObstacles(); }
+
+    public int getTunnelTimer() { return tunnelTimer; }
+
+    public int getCurrentMap() { return currentMap; }
+
+    public String getFinalResult(){ return null; }
+
     public void run() {
-        // 90 milliseconds of delay
         while (true) {
             update();
             window.render();
-            try {
-                Thread.sleep(16); // ~60 FPS
-            } catch (InterruptedException e) {}
+            try { Thread.sleep(16); } catch (InterruptedException e) {}
         }
-
     }
 
-    public int getTutorialTimer() {
-        return tutorialTimer;
-    }
+    public int getTutorialTimer() { return tutorialTimer; }
 
     public void addLevel1Obstacles(){
         obstacles.clear();
@@ -247,23 +298,16 @@ public class GameEngine {
     public void addLevel1Walls(){
         obstacles.add(new Wall(519, 79, 38, 316));
         obstacles.add(new Wall(245, 632, 38, 290));
-
     }
-
     public void addLevel2Walls(){
         obstacles.clear();
-
-        //Right side walls
         obstacles.add(new Wall(200, 0, 25, 320));
         obstacles.add(new Wall(250, 500, 25, 300));
         obstacles.add((new Wall(475, 0, 25, 300)));
-
-        //Left side walls
         obstacles.add((new Wall(700, 0, 25, 400)));
         obstacles.add((new Wall(475, 470, 25, 300)));
         obstacles.add(new Wall(900, 0, 25, 600));
     }
-
     public void addLevel1Ice(){
         obstacles.add((new Ice(113, 105, 245, 197)));
         obstacles.add((new Ice(396, 487, 283, 237)));
@@ -273,13 +317,11 @@ public class GameEngine {
         obstacles.add((new Ice(275, 600, 200, 120)));
         obstacles.add((new Ice(500, 260, 200, 120)));
     }
-
     public void addLevel1GrassP(){
         obstacles.add(new GrassPatch(620, 190, 180, 100));
         obstacles.add(new GrassPatch(620, 190, 180, 100));
         obstacles.add(new GrassPatch(680, 710, 180, 100));
     }
-
     public void addLevel2GrassP(){
         obstacles.add(new GrassPatch(390, 430, 125, 100));
         obstacles.add(new GrassPatch(720,530, 128, 100));

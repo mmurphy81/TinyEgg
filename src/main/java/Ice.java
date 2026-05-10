@@ -18,6 +18,10 @@ public class Ice extends Obstacle {
     }
     @Override
     public void respondToCollision(Egg egg) {
-        egg.applyImpulsive(egg.getVelX() + 2, egg.getVelY() * 2);
+        // Ice doesn't actively push the egg. The original code added +2 to
+        // velX and DOUBLED velY every frame the egg was on ice — that
+        // caused exponential acceleration and shot the egg off-screen.
+        // For a correct slippery feel, ice should reduce friction (not add
+        // force). Easiest version: just preserve current velocity here.
     }
 }

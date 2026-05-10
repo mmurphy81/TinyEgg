@@ -133,6 +133,26 @@ public class Egg {
         velX *= FRICTION;
         velY *= FRICTION;
 
+        // Keep the egg inside the 1000x1000 playfield. If it tries to
+        // leave, clamp it back to the edge and bounce its velocity off
+        // the boundary with damping.
+        if (x < 0) {
+            x = 0;
+            velX = -velX * 0.6;
+        }
+        if (x + WIDTH > 1000) {
+            x = 1000 - WIDTH;
+            velX = -velX * 0.6;
+        }
+        if (y < 0) {
+            y = 0;
+            velY = -velY * 0.6;
+        }
+        if (y + HEIGHT > 1000) {
+            y = 1000 - HEIGHT;
+            velY = -velY * 0.6;
+        }
+
         // stop tiny movement
         if (Math.abs(velX) < 0.05) velX = 0;
         if (Math.abs(velY) < 0.05) velY = 0;
