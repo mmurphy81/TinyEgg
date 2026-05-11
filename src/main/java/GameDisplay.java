@@ -627,16 +627,20 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
             g.drawString("You Win!", midX - 150, midY - 120);
         }
         // Rating
+        // This is going to check the amount of strokes the user took
+        // Depending on if they had less than 4 strokes
+        // Or less than 8 strokesw
+        // or more, they get a different mesage at the end
         String rating;
         Color ratingColor;
         if (strokes <= 4) {
             rating = "★ Magical! ★";
             ratingColor = new Color(180, 0, 200);
         } else if (strokes <= 8) {
-            rating = "Average";
+            rating = "Exceptional Effort!";
             ratingColor = new Color(0, 100, 180);
         } else {
-            rating = "Exceptional Effort!";
+            rating = "Average";
             ratingColor = new Color(180, 100, 0);
         }
         g.setColor(ratingColor);
