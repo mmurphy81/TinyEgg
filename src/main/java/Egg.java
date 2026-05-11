@@ -19,7 +19,7 @@ public class Egg {
     public static final int WIDTH = 40;
     public static final int HEIGHT = 55;
     private static final int GRAVITY = 1;
-    private static final int FLOOR = 700;
+    private static final int FLOOR = 945;
 
     // Game states
     public static final int STATE_IDLE = 0;
@@ -224,5 +224,8 @@ public class Egg {
         velX *= factor;
         velY *= factor;
     }
+
+    public void setVelX(double vx) { this.velX = vx; }
+    public void setVelY(double vy) { this.velY = vy; }
 
 }
