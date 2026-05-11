@@ -40,6 +40,7 @@ public class Egg {
         this.state = STATE_WOBBLE;
     }
 
+
     // Updates the opening for the egg and makes it fall
     public void updateOpening() {
         // Add one to the animation timer
@@ -136,6 +137,28 @@ public class Egg {
         // stop tiny movement
         if (Math.abs(velX) < 0.05) velX = 0;
         if (Math.abs(velY) < 0.05) velY = 0;
+
+        // Boundary checks — bounce off edges and stop quickly
+        if (x < 0) {
+            x = 0;
+            velX = Math.abs(velX) * 0.2;  // small bounce back, then stops
+            velY *= 0.2;
+        }
+        if (x + WIDTH > 1000) {
+            x = 1000 - WIDTH;
+            velX = -Math.abs(velX) * 0.2;
+            velY *= 0.2;
+        }
+        if (y < 0) {
+            y = 0;
+            velY = Math.abs(velY) * 0.2;
+            velX *= 0.2;
+        }
+        if (y + HEIGHT > FLOOR) {
+            y = FLOOR - HEIGHT;
+            velY = -Math.abs(velY) * 0.2;
+            velX *= 0.2;
+        }
     }
 
 
@@ -168,6 +191,9 @@ public class Egg {
     public double getVelY() {
         return velY;
     }
+
+    public void setX(double x) { this.x = x; }
+    public void setY(double y) { this.y = y; }
 
     public int getHealth() {
         return health;

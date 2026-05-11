@@ -1,13 +1,18 @@
 import java.awt.*;
 
 public class Wall extends Obstacle{
+    private boolean eggInside = false;
     public Wall(int x, int y, int width, int height) {
         super(x, y, width, height);
     }
 
     @Override
     public boolean hasCollided(Egg egg) {
-        return super.hasCollided(egg);
+        boolean colliding = super.hasCollided(egg);
+        if (!colliding) {
+            eggInside = false;
+        }
+        return colliding;
     }
 
     @Override
@@ -17,23 +22,37 @@ public class Wall extends Obstacle{
     }
 
     public void respondToCollision(Egg egg) {
-        double vx = egg.getVelX();
-        double vy = egg.getVelY();
+        if (eggInside) return;
+        eggInside = true;
+        double evx = egg.getVelX();
+        double evy = egg.getVelY();
         double ex = egg.getX();
         double ey = egg.getY();
 
-        double overlapLeft   = (ex + Egg.WIDTH)        - getX();
-        double overlapRight  = (getX() + getWidth())   - ex;
-        double overlapTop    = (ey + Egg.HEIGHT)        - getY();
-        double overlapBottom = (getY() + getHeight())  - ey;
+        double overlapLeft   = (ex + Egg.WIDTH)       - getX();
+        double overlapRight  = (getX() + getWidth())  - ex;
+        double overlapTop    = (ey + Egg.HEIGHT)      - getY();
+        double overlapBottom = (getY() + getHeight()) - ey;
 
         double minOverlap = Math.min(Math.min(overlapLeft, overlapRight),
-                Math.min(overlapTop, overlapBottom));
+                Math.min(overlapTop,  overlapBottom));
 
         if (minOverlap == overlapLeft || minOverlap == overlapRight) {
-            egg.applyImpulsive(-vx * 0.6, vy * 0.6);
+            // Hit left or right side — reverse X, heavily damp Y
+            egg.applyImpulsive(-evx * 0.1, evy * 0.1);
+            if (minOverlap == overlapLeft) {
+                egg.setX(getX() - Egg.WIDTH - 1);
+            } else {
+                egg.setX(getX() + getWidth() + 1);
+            }
         } else {
-            egg.applyImpulsive(vx * 0.6, -vy * 0.6);
+            // Hit top or bottom — reverse Y, heavily damp X
+            egg.applyImpulsive(evx * 0.1, -evy * 0.1);
+            if (minOverlap == overlapTop) {
+                egg.setY(getY() - Egg.HEIGHT - 1);
+            } else {
+                egg.setY(getY() + getHeight() + 1);
+            }
         }
 }
 }

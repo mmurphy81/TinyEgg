@@ -210,8 +210,7 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
         g.setColor(GRASS);
         g.fillRect(0, 0, getWidth(), getHeight());
 
-        // TODO MM move to backend after Ryans code
-        engine.addLevel1Obstacles();
+
 
         //Drawing all the obstacles
         for (int i =0; i<engine.getObstacles().size(); i++){
@@ -253,7 +252,7 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
         g.fillRect(0, 0, getWidth(), getHeight());
 
         //Draws the walls
-        engine.addLevel2Obstacles();
+
         for (int i =0; i<engine.getObstacles().size(); i++){
             engine.getObstacles().get(i).draw(g);
         }
@@ -358,7 +357,7 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
                 // Slightly reduce speed and add a small random angle deviation
                 if (zone.equals("yellow")) {
                     double angle = (Math.random() - 0.5) * 0.4;
-                    double speed = Math.sqrt(vx*vx + vy*vy) * (0.7 + Math.random() * 0.4);
+                    double speed = Math.sqrt(vx * vx + vy * vy) * (0.7 + Math.random() * 0.4);
                     double baseAngle = Math.atan2(vy, vx) + angle;
                     vx = Math.cos(baseAngle) * speed;
                     vy = Math.sin(baseAngle) * speed;
@@ -366,7 +365,7 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
                 // Red zone: heavily reduce speed and apply a large random angle deviation
                 else if (zone.equals("red")) {
                     double angle = (Math.random() - 0.5) * 1.2;
-                    double speed = Math.sqrt(vx*vx + vy*vy) * (0.3 + Math.random() * 0.5);
+                    double speed = Math.sqrt(vx * vx + vy * vy) * (0.3 + Math.random() * 0.5);
                     double baseAngle = Math.atan2(vy, vx) + angle;
                     vx = Math.cos(baseAngle) * speed;
                     vy = Math.sin(baseAngle) * speed;
@@ -377,10 +376,12 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
                 meter.reset();
                 waitingForMeter = false;
             } else {
-                // No shot is pending yet — the player is starting a new drag to aim
-                dragStart = e.getPoint();
-                currentMousePos = e.getPoint();
-                isDragging = true;
+                // Only allow dragging if the egg has already stopped moving
+                if (!engine.getEgg().isMoving()) {
+                    dragStart = e.getPoint();
+                    currentMousePos = e.getPoint();
+                    isDragging = true;
+                }
             }
         }
     }
@@ -597,6 +598,7 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
 
     private void drawEndScreen(Graphics g){
         int time = engine.getEndingTimer();
+        int strokes = engine.getStrokeCount();
 
         //Sets background to light purple
         g.setColor(LIGHT_PURPLE);
@@ -624,6 +626,23 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
             g.setFont(new Font("Arial", Font.BOLD, 64));
             g.drawString("You Win!", midX - 150, midY - 120);
         }
+        // Rating
+        String rating;
+        Color ratingColor;
+        if (strokes <= 4) {
+            rating = "★ Magical! ★";
+            ratingColor = new Color(180, 0, 200);
+        } else if (strokes <= 8) {
+            rating = "Average";
+            ratingColor = new Color(0, 100, 180);
+        } else {
+            rating = "Exceptional Effort!";
+            ratingColor = new Color(180, 100, 0);
+        }
+        g.setColor(ratingColor);
+        g.setFont(new Font("Arial", Font.BOLD, 36));
+        int ratingW = g.getFontMetrics().stringWidth(rating);
+        g.drawString(rating, midX - ratingW / 2, midY+130);
     }
 
     private void drawEndEgg(Graphics g, int midX, int midY, boolean cracked, boolean open){
