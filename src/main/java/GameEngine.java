@@ -283,8 +283,8 @@ public class GameEngine {
         obstacles.add(new Wall(200,   0, 25, 320));
         obstacles.add(new Wall(250, 500, 25, 300));
         obstacles.add(new Wall(475,   0, 25, 300));
-        obstacles.add(new Wall(700,   0, 25, 400));
-        obstacles.add(new Wall(475, 470, 25, 300));
+        obstacles.add(new Wall(700,   0, 25, 200));
+        obstacles.add(new Wall(475, 530, 25, 300));
         obstacles.add(new Wall(900,   0, 25, 600));
     }
 
