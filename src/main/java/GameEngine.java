@@ -18,7 +18,13 @@ public class GameEngine {
     private int currentMap   = 1;
     private int tutorialTimer;
     private int endingTimer;
-    private int strokeCount  = 0;  // total shots fired across both maps
+    private int strokeCount  = 0;  // total shots fired across all maps
+    private int[] strokesPerMap = new int[5];
+    private int tunnelTimer = 0;
+    private boolean playerLost = false;
+
+    private double barrierY = 450;
+    private double barrierVelY = 3;
 
     // ── Game state constants ───────────────────────────────────────────────────
     public static final int STATE_MENU     = 0;
@@ -26,16 +32,23 @@ public class GameEngine {
     public static final int STATE_OPENING  = 2;
     public static final int STATE_PLAYING  = 3;
     public static final int STATE_ENDING   = 4;
+    public static final int STATE_TUNNEL   = 5;
 
     // ── Map constants ──────────────────────────────────────────────────────────
     private static final int MAP_1 = 1;
     private static final int MAP_2 = 2;
+    private static final int MAP_3 = 3;
+    private static final int MAP_4 = 4;
 
     // Starting positions — chosen to avoid all obstacles on each map
     private static final int MAP1_START_X = 80;
     private static final int MAP1_START_Y = 645;
     private static final int MAP2_START_X = 80;
     private static final int MAP2_START_Y = 645;
+    private static final int MAP3_START_X = 100;
+    private static final int MAP3_START_Y = 870;
+    private static final int MAP4_START_X = 120;
+    private static final int MAP4_START_Y = 850;
 
     // Opening animation egg position (on the tree branch)
     private static final int OPENING_EGG_X = 600;
@@ -44,6 +57,45 @@ public class GameEngine {
     // Nest bounds for nest-entry detection
     private static final Rectangle MAP1_NEST = new Rectangle(736,  66, 200, 100);
     private static final Rectangle MAP2_NEST = new Rectangle(780, 660, 140,  50);
+    private static final Rectangle MAP4_NEST = new Rectangle(820, 100, 160,  80);
+
+    public static final int BARRIER_X = 875;
+    public static final int BARRIER_W = 30;
+    public static final int BARRIER_H = 110;
+    private static final double BARRIER_MIN_Y = 380;
+    private static final double BARRIER_MAX_Y = 560;
+    public static final int GATE_X     = 950;
+    public static final int GATE_Y_TOP = 410;
+    public static final int GATE_Y_BOT = 590;
+
+    private static final int TUNNEL_DURATION = 150;
+    private static final int HEALTH_REGEN_PER_LEVEL = 20;
+    private static final int HEALTH_COST_PER_SHOT = 2;
+    private static final int[] PAR_PER_MAP = { 0, 3, 4, 3, 4 };
+
+    public int getLevelNumber() {
+        if (currentMap == MAP_1) return 1;
+        if (currentMap == MAP_2) return 2;
+        return 3;
+    }
+
+    public String getDifficulty() {
+        switch (getLevelNumber()) {
+            case 1: return "Easy";
+            case 2: return "Medium";
+            case 3: return "Hard";
+            default: return "?";
+        }
+    }
+
+    public double getBarrierY() { return barrierY; }
+    public int    getTunnelTimer() { return tunnelTimer; }
+    public boolean didPlayerLose() { return playerLost; }
+    public int  getStrokesForMap(int m) { return strokesPerMap[m]; }
+    public int  getParForMap(int m)     { return PAR_PER_MAP[m]; }
+    public int  getTotalPar() {
+        return PAR_PER_MAP[1] + PAR_PER_MAP[2] + PAR_PER_MAP[3] + PAR_PER_MAP[4];
+    }
 
     // Tutorial timing constants (frames)
     private static final int TUTORIAL_FIRE_FRAME  = 240;
@@ -112,7 +164,15 @@ public class GameEngine {
             case STATE_TUTORIAL: updateTutorial();  break;
             case STATE_OPENING:  updateOpening();   break;
             case STATE_PLAYING:  updatePlaying();   break;
+            case STATE_TUNNEL:   updateTunnel();    break;
             case STATE_ENDING:   endingTimer++;     break;
+        }
+    }
+
+    private void updateTunnel() {
+        tunnelTimer++;
+        if (tunnelTimer >= TUNNEL_DURATION) {
+            advanceToMap4();
         }
     }
 
@@ -140,7 +200,48 @@ public class GameEngine {
         meter.update();
         activeEgg.move();
         checkCollision();
+        if (currentMap == MAP_3) {
+            updateBarrier();
+            checkBarrierCollision();
+        }
         checkNestEntry();
+        if (activeEgg.isCracked()) {
+            playerLost = true;
+            endingTimer = 0;
+            gameState = STATE_ENDING;
+        }
+    }
+
+    private void updateBarrier() {
+        barrierY += barrierVelY;
+        if (barrierY < BARRIER_MIN_Y) {
+            barrierY = BARRIER_MIN_Y;
+            barrierVelY = -barrierVelY;
+        }
+        if (barrierY > BARRIER_MAX_Y) {
+            barrierY = BARRIER_MAX_Y;
+            barrierVelY = -barrierVelY;
+        }
+    }
+
+    private void checkBarrierCollision() {
+        double ex = activeEgg.getX();
+        double ey = activeEgg.getY();
+        int by = (int) barrierY;
+        boolean overlapping = ex + Egg.WIDTH > BARRIER_X
+                           && ex < BARRIER_X + BARRIER_W
+                           && ey + Egg.HEIGHT > by
+                           && ey < by + BARRIER_H;
+        if (!overlapping) return;
+        double vx = activeEgg.getVelX();
+        double vy = activeEgg.getVelY();
+        double overlapL = (ex + Egg.WIDTH) - BARRIER_X;
+        double overlapR = (BARRIER_X + BARRIER_W) - ex;
+        double newVX = vx;
+        if (overlapL < overlapR && vx > 0)      newVX = -vx * 0.6;
+        else if (overlapL >= overlapR && vx < 0) newVX = -vx * 0.6;
+        activeEgg.reduceHealth(Egg.impactDamage(Math.sqrt(vx*vx + vy*vy)) / 2);
+        activeEgg.applyImpulsive(newVX, vy * 0.95);
     }
 
     // ── Shot processing ────────────────────────────────────────────────────────
@@ -151,6 +252,8 @@ public class GameEngine {
      */
     public void processShotDirect(double vx, double vy) {
         strokeCount++;
+        strokesPerMap[currentMap]++;
+        activeEgg.reduceHealth(HEALTH_COST_PER_SHOT);
         activeEgg.applyImpulsive(vx, vy);
     }
 
@@ -171,25 +274,76 @@ public class GameEngine {
      * On map 2: triggers the ending screen.
      */
     public void checkNestEntry() {
-        Rectangle nestBounds = (currentMap == MAP_1) ? MAP1_NEST : MAP2_NEST;
-        Rectangle eggBounds  = new Rectangle(
-                (int) activeEgg.getX(), (int) activeEgg.getY(), Egg.WIDTH, Egg.HEIGHT);
+        if (currentMap == MAP_3) {
+            double ex = activeEgg.getX();
+            double ey = activeEgg.getY();
+            if (ex >= GATE_X
+                    && ey >= GATE_Y_TOP && ey + Egg.HEIGHT <= GATE_Y_BOT) {
+                startTunnelCutscene();
+            }
+            return;
+        }
+
+        Rectangle nestBounds;
+        if      (currentMap == MAP_1) nestBounds = MAP1_NEST;
+        else if (currentMap == MAP_2) nestBounds = MAP2_NEST;
+        else                          nestBounds = MAP4_NEST;
+
+        Rectangle eggBounds = new Rectangle(
+                (int) activeEgg.getX(), (int) activeEgg.getY(),
+                Egg.WIDTH, Egg.HEIGHT);
 
         if (nestBounds.intersects(eggBounds) && !activeEgg.isMoving()) {
-            if (currentMap == MAP_2) {
+            if (currentMap == MAP_1)      advanceToMap2();
+            else if (currentMap == MAP_2) advanceToMap3();
+            else {
+                playerLost = false;
+                endingTimer = 0;
                 gameState = STATE_ENDING;
-            } else {
-                advanceToMap2();
             }
         }
     }
 
-    /** Clears map 1 obstacles, loads map 2, and repositions the egg. */
     private void advanceToMap2() {
         currentMap = MAP_2;
         obstacles.clear();
         addLevel2Obstacles();
         activeEgg = new Egg(MAP2_START_X, MAP2_START_Y);
+        activeEgg.addHealth(HEALTH_REGEN_PER_LEVEL);
+    }
+
+    private void advanceToMap3() {
+        currentMap = MAP_3;
+        obstacles.clear();
+        addLevel3aObstacles();
+        activeEgg = new Egg(MAP3_START_X, MAP3_START_Y);
+        activeEgg.addHealth(HEALTH_REGEN_PER_LEVEL);
+    }
+
+    private void startTunnelCutscene() {
+        tunnelTimer = 0;
+        gameState   = STATE_TUNNEL;
+    }
+
+    private void advanceToMap4() {
+        currentMap = MAP_4;
+        obstacles.clear();
+        addLevel3bObstacles();
+        activeEgg = new Egg(MAP4_START_X, MAP4_START_Y);
+        gameState = STATE_PLAYING;
+    }
+
+    public void resetGame() {
+        strokeCount = 0;
+        for (int i = 0; i < strokesPerMap.length; i++) strokesPerMap[i] = 0;
+        tunnelTimer = 0;
+        endingTimer = 0;
+        playerLost = false;
+        currentMap = MAP_1;
+        obstacles.clear();
+        addLevel1Obstacles();
+        activeEgg = new Egg(OPENING_EGG_X, OPENING_EGG_Y);
+        gameState = STATE_OPENING;
     }
 
     // ── Tutorial scripting ─────────────────────────────────────────────────────
@@ -309,6 +463,45 @@ public class GameEngine {
         obstacles.add(new GrassPatch(390, 430, 125, 100));
         obstacles.add(new GrassPatch(720, 530, 128, 100));
         obstacles.add(new GrassPatch(560, 720, 140, 100));
+    }
+
+    public void addLevel3aObstacles() {
+        obstacles.clear();
+        obstacles.add(new Wall(940,  40, 20, GATE_Y_TOP - 40));
+        obstacles.add(new Wall(940, GATE_Y_BOT, 20, 960 - GATE_Y_BOT));
+        obstacles.add(new Wall(180, 200, 25, 500));
+        obstacles.add(new Wall(180, 750, 200, 25));
+        obstacles.add(new Wall(280, 100, 25, 300));
+        obstacles.add(new Wall(450, 100, 25, 350));
+        obstacles.add(new Wall(450, 550, 25, 350));
+        obstacles.add(new Wall(450, 850, 350, 25));
+        obstacles.add(new Wall(650, 250, 25, 300));
+        obstacles.add(new Wall(650, 650, 25, 250));
+        obstacles.add(new Wall(800, 350, 25, 100));
+        obstacles.add(new Wall(800, 600, 25, 100));
+        obstacles.add(new Ice( 60, 250, 100, 80));
+        obstacles.add(new Ice(550, 750, 100, 80));
+        obstacles.add(new Ice(700, 400, 80,  80));
+        obstacles.add(new GrassPatch(770, 420, 100, 60));
+        obstacles.add(new GrassPatch(770, 540, 100, 60));
+        obstacles.add(new GrassPatch(350, 800,  80, 50));
+    }
+
+    public void addLevel3bObstacles() {
+        obstacles.clear();
+        obstacles.add(new Wall(300, 600,  25, 350));
+        obstacles.add(new Wall(600, 300,  25, 350));
+        obstacles.add(new Wall(450,  80, 350,  25));
+        obstacles.add(new Wall(100, 400, 250,  25));
+        obstacles.add(new Wall(750, 600,  25, 300));
+        obstacles.add(new Wall(200, 200,  25, 200));
+        obstacles.add(new Wall(450, 750,  25, 200));
+        obstacles.add(new Wall(600, 870, 250,  25));
+        obstacles.add(new Wall(820, 200,  25,  90));
+        obstacles.add(new Ice( 50, 100, 250,  80));
+        obstacles.add(new Ice(350, 350, 200, 100));
+        obstacles.add(new Ice(550, 850, 200,  70));
+        obstacles.add(new GrassPatch(700, 200, 110, 70));
     }
 
     // ── Game loop ──────────────────────────────────────────────────────────────
