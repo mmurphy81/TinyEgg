@@ -38,7 +38,10 @@ public class Egg {
         this.y = startY;
         this.velY = 0;
         this.state = STATE_WOBBLE;
+        this.health = MAX_HEALTH;
     }
+
+    public static final int MAX_HEALTH = 100;
 
 
     // Updates the opening for the egg and makes it fall
@@ -138,23 +141,27 @@ public class Egg {
         if (Math.abs(velX) < 0.05) velX = 0;
         if (Math.abs(velY) < 0.05) velY = 0;
 
-        // Boundary checks — bounce off edges and stop quickly
+        // Boundary checks — bounce off edges and lose health by impact speed.
         if (x < 0) {
+            reduceHealth(impactDamage(Math.abs(velX)) / 2);
             x = 0;
-            velX = Math.abs(velX) * 0.2;  // small bounce back, then stops
+            velX = Math.abs(velX) * 0.2;
             velY *= 0.2;
         }
         if (x + WIDTH > 1000) {
+            reduceHealth(impactDamage(Math.abs(velX)) / 2);
             x = 1000 - WIDTH;
             velX = -Math.abs(velX) * 0.2;
             velY *= 0.2;
         }
         if (y < 0) {
+            reduceHealth(impactDamage(Math.abs(velY)) / 2);
             y = 0;
             velY = Math.abs(velY) * 0.2;
             velX *= 0.2;
         }
         if (y + HEIGHT > FLOOR) {
+            reduceHealth(impactDamage(Math.abs(velY)) / 2);
             y = FLOOR - HEIGHT;
             velY = -Math.abs(velY) * 0.2;
             velX *= 0.2;
@@ -162,8 +169,23 @@ public class Egg {
     }
 
 
-    public void reduceHealth(int amount){
+    public void reduceHealth(int amount) {
+        if (amount <= 0) return;
+        health -= amount;
+        if (health < 0) health = 0;
+    }
 
+    public void addHealth(int amount) {
+        if (amount <= 0) return;
+        health += amount;
+        if (health > MAX_HEALTH) health = MAX_HEALTH;
+    }
+
+    public static int impactDamage(double speed) {
+        int dmg = (int)(speed * 1.2);
+        if (dmg < 1) return 0;
+        if (dmg > 70) return 70;
+        return dmg;
     }
 
     public void applyImpulsive(double vx, double vy){
@@ -173,7 +195,7 @@ public class Egg {
     }
 
     public boolean isCracked(){
-        return false;
+        return health <= 0;
     }
 
     public double getX(){

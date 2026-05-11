@@ -88,30 +88,32 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
 
 
     private void myPaint(Graphics g) {
-        // Draw white screen each time so that old arrows are not remaining
-        // If we are in opening stages of the game, draw the begining animation
         if (engine.getGameState() == GameEngine.STATE_OPENING) {
             drawOpening(g);
-
         }
-        else if(engine.getGameState() == GameEngine.STATE_PLAYING){
-            if (engine.getCurrentMap() == 1) {
-                drawMap1(g);
-            } else {
-                drawMap2(g);
-            }
+        else if (engine.getGameState() == GameEngine.STATE_PLAYING) {
+            int map = engine.getCurrentMap();
+            if      (map == 1) drawMap1(g);
+            else if (map == 2) drawMap2(g);
+            else if (map == 3) drawMap3(g);
+            else               drawMap4(g);
             meter.drawMeter(g);
             engine.getEgg().draw(g);
+            drawHUD(g);
+        }
+        else if (engine.getGameState() == GameEngine.STATE_TUNNEL) {
+            drawTunnel(g);
         }
 
-        // Only draw the egg when it is not moving and if the user is dragging
         if (isDragging && !engine.getEgg().isMoving()) {
             drawShotPreview(g);
         }
 
-        // If the egg has landed, then we draw the crack on the egg
-        if (engine.getEgg().getState() == 5) {
-            engine.getEgg().drawCrack(g, (int)engine.getEgg().getX(), (int)engine.getEgg().getY() - 10);
+        if (engine.getEgg().getState() == 5
+                && engine.getGameState() != GameEngine.STATE_PLAYING) {
+            engine.getEgg().drawCrack(g,
+                    (int) engine.getEgg().getX(),
+                    (int) engine.getEgg().getY() - 10);
         }
     }
 
@@ -280,6 +282,195 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
 
     }
 
+    private static final Color SAND        = new Color(240, 220, 160);
+    private static final Color DARK_SAND   = new Color(210, 185, 130);
+    private static final Color WATER       = new Color(110, 190, 220);
+    private static final Color WATER_DARK  = new Color( 80, 160, 200);
+    private static final Color PALM_TRUNK  = new Color(100,  65,  35);
+    private static final Color PALM_FRONDS = new Color( 40, 130,  50);
+    private static final Color PALM_SHADOW = new Color( 20,  90,  30);
+    private static final Color SUN_COLOR   = new Color(255, 230, 100);
+
+    private void drawTropicalBackground(Graphics g) {
+        g.setColor(SAND);
+        g.fillRect(0, 0, getWidth(), getHeight());
+        g.setColor(WATER);
+        g.fillRect(0, 0, getWidth(), 60);
+        g.setColor(WATER_DARK);
+        for (int x = 0; x < getWidth(); x += 40) g.drawArc(x, 40, 40, 20, 0, 180);
+        g.setColor(DARK_SAND);
+        int[][] patches = {
+                {120, 200, 80, 40}, {820, 350, 70, 35}, {400, 740, 90, 45},
+                {660, 180, 60, 30}, {300, 880, 100, 35}, {850, 720, 65, 30}
+        };
+        for (int[] p : patches) g.fillOval(p[0], p[1], p[2], p[3]);
+        drawSun(g, 920, 130);
+    }
+
+    private void drawSun(Graphics g, int cx, int cy) {
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setColor(SUN_COLOR);
+        g2.fillOval(cx - 35, cy - 35, 70, 70);
+        g2.setColor(new Color(255, 200, 90));
+        g2.drawOval(cx - 35, cy - 35, 70, 70);
+        g2.setStroke(new BasicStroke(4));
+        for (int i = 0; i < 8; i++) {
+            double a = i * Math.PI / 4;
+            int x1 = (int)(cx + Math.cos(a) * 42);
+            int y1 = (int)(cy + Math.sin(a) * 42);
+            int x2 = (int)(cx + Math.cos(a) * 62);
+            int y2 = (int)(cy + Math.sin(a) * 62);
+            g2.drawLine(x1, y1, x2, y2);
+        }
+        g2.setStroke(new BasicStroke(1));
+    }
+
+    private void drawPalmTree(Graphics g, int baseX, int baseY) {
+        g.setColor(PALM_TRUNK);
+        g.fillRect(baseX - 8, baseY - 90, 16, 90);
+        g.setColor(BROWN);
+        g.drawRect(baseX - 8, baseY - 90, 16, 90);
+        int topX = baseX, topY = baseY - 90;
+        g.setColor(PALM_FRONDS);
+        g.fillOval(topX - 55, topY - 25, 110, 40);
+        g.fillOval(topX - 35, topY - 50,  70, 60);
+        g.fillOval(topX - 65, topY -  5,  55, 30);
+        g.fillOval(topX + 10, topY -  5,  55, 30);
+        g.setColor(PALM_SHADOW);
+        g.drawOval(topX - 55, topY - 25, 110, 40);
+        g.drawOval(topX - 35, topY - 50,  70, 60);
+    }
+
+    private void drawBarrier(Graphics g) {
+        int by = (int) engine.getBarrierY();
+        g.setColor(CORAL);
+        g.fillRect(GameEngine.BARRIER_X, by, GameEngine.BARRIER_W, GameEngine.BARRIER_H);
+        g.setColor(new Color(150, 50, 50));
+        g.drawRect(GameEngine.BARRIER_X, by, GameEngine.BARRIER_W, GameEngine.BARRIER_H);
+        g.setColor(Color.WHITE);
+        int mid = GameEngine.BARRIER_X + GameEngine.BARRIER_W / 2;
+        g.drawLine(mid - 5, by + 5, mid, by - 3);
+        g.drawLine(mid, by - 3, mid + 5, by + 5);
+        g.drawLine(mid - 5, by + GameEngine.BARRIER_H - 5, mid, by + GameEngine.BARRIER_H + 3);
+        g.drawLine(mid, by + GameEngine.BARRIER_H + 3, mid + 5, by + GameEngine.BARRIER_H - 5);
+    }
+
+    private void drawMap3(Graphics g) {
+        drawTropicalBackground(g);
+        drawPalmTree(g,  90, 950);
+        drawPalmTree(g,  90, 240);
+        drawPalmTree(g, 600, 980);
+        for (int i = 0; i < engine.getObstacles().size(); i++) {
+            engine.getObstacles().get(i).draw(g);
+        }
+        g.setColor(new Color(20, 20, 30));
+        g.fillRect(GameEngine.GATE_X, GameEngine.GATE_Y_TOP,
+                getWidth() - GameEngine.GATE_X,
+                GameEngine.GATE_Y_BOT - GameEngine.GATE_Y_TOP);
+        drawBarrier(g);
+        g.setColor(DARK_GREEN);
+        int[] gx1 = {775, 800, 825, 850};
+        int[] gy1 = {450, 435, 450, 435};
+        g.drawPolyline(gx1, gy1, gx1.length);
+        int[] gx2 = {775, 800, 825, 850};
+        int[] gy2 = {570, 555, 570, 555};
+        g.drawPolyline(gx2, gy2, gx2.length);
+    }
+
+    private void drawMap4(Graphics g) {
+        drawTropicalBackground(g);
+        drawPalmTree(g,  90, 970);
+        drawPalmTree(g, 950, 970);
+        drawPalmTree(g,  90, 280);
+        for (int i = 0; i < engine.getObstacles().size(); i++) {
+            engine.getObstacles().get(i).draw(g);
+        }
+        g.setColor(LIGHT_ORANGE);
+        g.fillOval(820, 100, 160, 80);
+        g.setColor(BROWN);
+        g.fillOval(835, 110, 130, 60);
+        g.setColor(DARK_GREEN);
+        int[] gx = {705, 735, 765, 795};
+        int[] gy = {230, 215, 230, 215};
+        g.drawPolyline(gx, gy, gx.length);
+    }
+
+    private void drawTunnel(Graphics g) {
+        int totalFrames = 150;
+        int t = engine.getTunnelTimer();
+        g.setColor(new Color(20, 20, 30));
+        g.fillRect(0, 0, getWidth(), getHeight());
+        int[] xs = {  50, 250, 400, 600, 750, 900 };
+        int[] ys = { 150, 350, 200, 600, 400, 800 };
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(70, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g2.setColor(new Color(80, 80, 100));
+        for (int i = 0; i < xs.length - 1; i++) g2.drawLine(xs[i], ys[i], xs[i+1], ys[i+1]);
+        g2.setStroke(new BasicStroke(50, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g2.setColor(new Color(40, 40, 60));
+        for (int i = 0; i < xs.length - 1; i++) g2.drawLine(xs[i], ys[i], xs[i+1], ys[i+1]);
+        double progress = (double) t / totalFrames;
+        if (progress > 1) progress = 1;
+        int segments = xs.length - 1;
+        double segProgress = progress * segments;
+        int segIdx = (int) segProgress;
+        if (segIdx >= segments) segIdx = segments - 1;
+        double segFrac = segProgress - segIdx;
+        int ballX = (int)(xs[segIdx] + (xs[segIdx+1] - xs[segIdx]) * segFrac);
+        int ballY = (int)(ys[segIdx] + (ys[segIdx+1] - ys[segIdx]) * segFrac);
+        g2.setStroke(new BasicStroke(1));
+        g2.setColor(Color.WHITE);
+        g2.fillOval(ballX - 14, ballY - 14, 28, 28);
+        g2.setColor(Color.BLACK);
+        g2.drawOval(ballX - 14, ballY - 14, 28, 28);
+        g2.setColor(Color.WHITE);
+        g2.setFont(new Font("Arial", Font.BOLD, 24));
+        g2.drawString("Through the tunnel...", 380, 950);
+    }
+
+    private void drawHUD(Graphics g) {
+        drawPlayHealthBar(g);
+        drawStrokeCount(g);
+        drawLevelBadge(g);
+    }
+
+    private void drawPlayHealthBar(Graphics g) {
+        int h = engine.getEgg().getHealth();
+        if (h < 0) h = 0;
+        if (h > Egg.MAX_HEALTH) h = Egg.MAX_HEALTH;
+        g.setColor(new Color(40, 40, 40));
+        g.fillRoundRect(20, 20, 240, 28, 8, 8);
+        Color barColor;
+        if (h > 60)      barColor = new Color(60, 180, 60);
+        else if (h > 30) barColor = new Color(220, 180, 0);
+        else             barColor = new Color(200, 40, 40);
+        g.setColor(barColor);
+        g.fillRoundRect(24, 24, (int)((h / (double) Egg.MAX_HEALTH) * 232), 20, 6, 6);
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 14));
+        g.drawString("HP " + h + " / " + Egg.MAX_HEALTH, 32, 39);
+    }
+
+    private void drawStrokeCount(Graphics g) {
+        int map = engine.getCurrentMap();
+        int strokes = engine.getStrokesForMap(map);
+        int par = engine.getParForMap(map);
+        g.setColor(new Color(0, 0, 0, 150));
+        g.fillRoundRect(20, 58, 240, 32, 10, 10);
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 16));
+        g.drawString("Strokes: " + strokes + "    Par: " + par, 32, 80);
+    }
+
+    private void drawLevelBadge(Graphics g) {
+        String text = "Level " + engine.getLevelNumber() + " — " + engine.getDifficulty();
+        g.setColor(new Color(0, 0, 0, 150));
+        g.fillRoundRect(getWidth() - 250, 20, 230, 38, 12, 12);
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 20));
+        g.drawString(text, getWidth() - 232, 46);
+    }
+
     private void drawUI(Graphics g){
 
     }
@@ -343,7 +534,12 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
             engine.skipToOpening(); // allow skipping mid-animation
         }
 
-        // In mousePressed(MouseEvent e):
+        else if (engine.getGameState() == GameEngine.STATE_ENDING) {
+            if (playAgainButton.contains(e.getPoint())) {
+                engine.resetGame();
+            }
+        }
+
         else if (engine.getGameState() == GameEngine.STATE_PLAYING) {
             // If the shot direction has already been set and we're waiting for the player
             // to click to lock the shot meter, handle the meter result
@@ -458,7 +654,7 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
 
         drawFakeMouse(g);
 
-        drawHealthBar(g);
+        drawTutorialHealthBar(g);
 
         // draw egg
         engine.getEgg().draw(g);
@@ -558,18 +754,12 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
         g2.drawLine(startX, startY, endX, endY);
     }
 
-    private void drawHealthBar(Graphics g) {
+    private void drawTutorialHealthBar(Graphics g) {
         g.setColor(Color.GRAY);
         g.fillRect(20, 20, 200, 20);
-
         int t = engine.getTutorialTimer();
-
         int health = 100;
-
-        if (t > 360) {
-            health = 60; // show damage
-        }
-
+        if (t > 360) health = 60;
         g.setColor(Color.RED);
         g.fillRect(20, 20, health * 2, 20);
     }
@@ -596,13 +786,16 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
         }
     }
 
+    private Rectangle playAgainButton = new Rectangle(400, 880, 200, 60);
+
     private void drawEndScreen(Graphics g){
         int time = engine.getEndingTimer();
         int strokes = engine.getStrokeCount();
+        int totalPar = engine.getTotalPar();
+        boolean lost = engine.didPlayerLose();
 
-        //Sets background to light purple
-        g.setColor(LIGHT_PURPLE);
-        g.fillRect(0,0, getWidth(), getHeight());
+        g.setColor(lost ? new Color(255, 200, 200) : LIGHT_PURPLE);
+        g.fillRect(0, 0, getWidth(), getHeight());
 
         int midX = getWidth()/2;
         int midY = getHeight()/2;
@@ -647,6 +840,40 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
         g.setFont(new Font("Arial", Font.BOLD, 36));
         int ratingW = g.getFontMetrics().stringWidth(rating);
         g.drawString(rating, midX - ratingW / 2, midY+130);
+
+        g.setColor(new Color(60, 130, 200));
+        g.fillRoundRect(playAgainButton.x, playAgainButton.y,
+                playAgainButton.width, playAgainButton.height, 16, 16);
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 24));
+        String play = "Play Again";
+        int playW = g.getFontMetrics().stringWidth(play);
+        g.drawString(play,
+                playAgainButton.x + (playAgainButton.width - playW) / 2,
+                playAgainButton.y + 38);
+    }
+
+    private void drawEndStats(Graphics g, int midX, int midY, int totalStrokes, int totalPar) {
+        int x = midX - 200;
+        int y = midY + 170;
+        g.setColor(new Color(255, 255, 255, 200));
+        g.fillRoundRect(x, y, 400, 180, 14, 14);
+        g.setColor(Color.BLACK);
+        g.drawRoundRect(x, y, 400, 180, 14, 14);
+
+        g.setFont(new Font("Arial", Font.BOLD, 18));
+        g.drawString("Level 1 (Easy):   " + engine.getStrokesForMap(1)
+                + " / par " + engine.getParForMap(1), x + 20, y + 30);
+        g.drawString("Level 2 (Medium): " + engine.getStrokesForMap(2)
+                + " / par " + engine.getParForMap(2), x + 20, y + 60);
+        int lvl3Strokes = engine.getStrokesForMap(3) + engine.getStrokesForMap(4);
+        int lvl3Par     = engine.getParForMap(3)     + engine.getParForMap(4);
+        g.drawString("Level 3 (Hard):   " + lvl3Strokes
+                + " / par " + lvl3Par, x + 20, y + 90);
+        g.setColor(new Color(80, 0, 0));
+        g.setFont(new Font("Arial", Font.BOLD, 22));
+        g.drawString("Total:  " + totalStrokes + " strokes  /  par " + totalPar,
+                x + 20, y + 140);
     }
 
     private void drawEndEgg(Graphics g, int midX, int midY, boolean cracked, boolean open){

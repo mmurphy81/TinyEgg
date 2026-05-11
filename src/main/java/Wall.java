@@ -29,6 +29,9 @@ public class Wall extends Obstacle{
         double ex = egg.getX();
         double ey = egg.getY();
 
+        double impactSpeed = Math.sqrt(evx * evx + evy * evy);
+        egg.reduceHealth(Egg.impactDamage(impactSpeed));
+
         double overlapLeft   = (ex + Egg.WIDTH)       - getX();
         double overlapRight  = (getX() + getWidth())  - ex;
         double overlapTop    = (ey + Egg.HEIGHT)      - getY();
