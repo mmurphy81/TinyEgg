@@ -19,7 +19,7 @@ public class Egg {
     public static final int WIDTH = 40;
     public static final int HEIGHT = 55;
     private static final int GRAVITY = 1;
-    private static final int FLOOR = 700;
+    private static final int FLOOR = 945;
 
     // Game states
     public static final int STATE_IDLE = 0;
@@ -39,6 +39,7 @@ public class Egg {
         this.velY = 0;
         this.state = STATE_WOBBLE;
     }
+
 
     // Updates the opening for the egg and makes it fall
     public void updateOpening() {
@@ -136,6 +137,28 @@ public class Egg {
         // stop tiny movement
         if (Math.abs(velX) < 0.05) velX = 0;
         if (Math.abs(velY) < 0.05) velY = 0;
+
+        // Boundary checks — bounce off edges and stop quickly
+        if (x < 0) {
+            x = 0;
+            velX = Math.abs(velX) * 0.2;  // small bounce back, then stops
+            velY *= 0.2;
+        }
+        if (x + WIDTH > 1000) {
+            x = 1000 - WIDTH;
+            velX = -Math.abs(velX) * 0.2;
+            velY *= 0.2;
+        }
+        if (y < 0) {
+            y = 0;
+            velY = Math.abs(velY) * 0.2;
+            velX *= 0.2;
+        }
+        if (y + HEIGHT > FLOOR) {
+            y = FLOOR - HEIGHT;
+            velY = -Math.abs(velY) * 0.2;
+            velX *= 0.2;
+        }
     }
 
 
@@ -169,6 +192,9 @@ public class Egg {
         return velY;
     }
 
+    public void setX(double x) { this.x = x; }
+    public void setY(double y) { this.y = y; }
+
     public int getHealth() {
         return health;
     }
@@ -198,5 +224,8 @@ public class Egg {
         velX *= factor;
         velY *= factor;
     }
+
+    public void setVelX(double vx) { this.velX = vx; }
+    public void setVelY(double vy) { this.velY = vy; }
 
 }
