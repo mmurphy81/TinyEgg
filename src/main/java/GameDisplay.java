@@ -239,7 +239,6 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
 
         drawTutorialArrowIfNeeded(g2); // red line from egg to fake mouse during drag phases
         drawTutorialText(g);           // step-by-step instruction text at the top of the screen
-        drawImpactFlashIfNeeded(g);    // red overlay that appears when the bad shot hits the block
     }
 
     /**
@@ -304,26 +303,15 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
         g.setFont(new Font("Arial", Font.BOLD, 18));
 
         // Each branch matches a phase of the tutorial sequence
-        if      (t < 120) g.drawString("Goal: Get the egg into the nest!", 200, 100); // introduce goal
+        if      (t < 120) g.drawString("Goal: Get the egg into the nest wiht the fewest number of strokes!", 200, 100); // introduce goal
         else if (t < 240) g.drawString("Click and drag backwards to aim",  180, 100); // drag demo
-        else if (t < 300) g.drawString("Release to shoot!",                260, 100); // shot fires
+        else if (t < 300) g.drawString("Release to shoot in the other direction!",                260, 100); // shot fires
         else if (t < 360) g.drawString("Perfect shot!",                    280, 100); // egg in nest
         else if (t < 420) g.drawString("But watch out for obstacles...",   200, 100); // reset for bad demo
         else if (t < 480) g.drawString("Obstacles have their own powers: speed, slowing, and reflecting.",    180, 100); // bad drag demo
         else              g.drawString("Use the obstacles how you please to help you win!", 150, 100); // impact warning
     }
 
-    /**
-     * Shows a red screen flash once the tutorial egg has hit the obstacle block.
-     * The flash stays on until the tutorial ends.
-     */
-    private void drawImpactFlashIfNeeded(Graphics g) {
-        if (engine.getTutorialHit()) tutorialHitOccurred = true; // latch: once hit, always flash
-        if (tutorialHitOccurred) {
-            g.setColor(IMPACT_FLASH);                         // semi-transparent red (alpha=120)
-            g.fillRect(0, 0, getWidth(), getHeight());        // overlay covers the whole screen
-        }
-    }
 
     // ── Map drawing ────────────────────────────────────────────────────────────
 
