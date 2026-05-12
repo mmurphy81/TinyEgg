@@ -345,10 +345,10 @@ public class GameEngine {
 
     private void addLevel2Walls() {
         obstacles.add(new Wall(200,   0, 25, 320)); // left vertical wall, top portion
-        obstacles.add(new Wall(250, 500, 25, 300)); // left vertical wall, bottom portion
+        obstacles.add(new Wall(250, 500, 25, 400)); // left vertical wall, bottom portion
         obstacles.add(new Wall(475,   0, 25, 300)); // center-left vertical wall, top portion
         obstacles.add(new Wall(700,   0, 25, 200)); // center-right vertical wall, top portion
-        obstacles.add(new Wall(475, 530, 25, 300)); // center-left vertical wall, bottom portion
+        obstacles.add(new Wall(475, 530, 25, 400)); // center-left vertical wall, bottom portion
         obstacles.add(new Wall(900,   0, 25, 600)); // far-right vertical wall
     }
 
