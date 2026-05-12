@@ -546,7 +546,7 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
             rating      = "Exceptional Effort!";
             ratingColor = new Color(0, 100, 180); // blue — middle tier
         } else {
-            rating      = "Average";
+            rating      = "Good try...";
             ratingColor = new Color(180, 100, 0); // orange — lowest tier
         }
 
