@@ -309,8 +309,8 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
         else if (t < 300) g.drawString("Release to shoot!",                260, 100); // shot fires
         else if (t < 360) g.drawString("Perfect shot!",                    280, 100); // egg in nest
         else if (t < 420) g.drawString("But watch out for obstacles...",   200, 100); // reset for bad demo
-        else if (t < 480) g.drawString("Bad aim can cause collisions!",    180, 100); // bad drag demo
-        else              g.drawString("Avoid obstacles to protect your egg!", 150, 100); // impact warning
+        else if (t < 480) g.drawString("Obstacles have their own powers: speed, slowing, and reflecting.",    180, 100); // bad drag demo
+        else              g.drawString("Use the obstacles how you please to help you win!", 150, 100); // impact warning
     }
 
     /**
@@ -551,7 +551,7 @@ public class GameDisplay extends JFrame implements MouseListener, MouseMotionLis
         Color  ratingColor; // color chosen to match performance level
 
         // Select rating tier based on how many strokes it took to finish the game
-        if (strokes <= 4) {
+        if (strokes <= 6) {
             rating      = "★ Magical! ★";
             ratingColor = new Color(180, 0, 200); // purple — best tier
         } else if (strokes <= 8) {
